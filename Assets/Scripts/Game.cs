@@ -15,6 +15,7 @@ namespace UnityGinRummy
 
         Player localPlayer;
         Player remotePlayer;
+        Player currentTurnPlayer;
 
         public List<Transform> PlayerPositions = new List<Transform>();
 
@@ -99,6 +100,18 @@ namespace UnityGinRummy
         public void AllAnimationsFinished()
         {
             GameFlow();
+        }
+
+        public void SwitchTurns()
+        {
+            if (currentTurnPlayer == null | currentTurnPlayer == remotePlayer)
+            {
+                currentTurnPlayer = localPlayer;
+            }
+            else
+            {
+                currentTurnPlayer = remotePlayer;
+            }
         }
     }
 }
