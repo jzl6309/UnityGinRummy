@@ -47,5 +47,18 @@ namespace UnityGinRummy
                 player2Cards.AddRange(cards);
             }
         }
+
+        public List<byte> PlayerCards(Player player)
+        {
+            if (player.PlayerId.Equals(player1ID))
+            {
+                return player1Cards;
+            }
+            else
+            {
+                return player2Cards;
+            }
+
+        }
     }
 }

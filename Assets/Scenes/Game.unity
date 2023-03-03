@@ -128,6 +128,50 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4081886479532196287, guid: ccc93d0c687ce95049511e18f96b68d1, type: 3}
   m_PrefabInstance: {fileID: 1820755923}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &47186473
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 47186475}
+  - component: {fileID: 47186474}
+  m_Layer: 0
+  m_Name: Mouse
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &47186474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 47186473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0deba14115d18cb4ab781b584710d017, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &47186475
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 47186473}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.5243764, y: -0.07887178, z: 0.013447328}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &364095084
 GameObject:
   m_ObjectHideFlags: 0
@@ -506,7 +550,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 3c1913dc7dca888efab09eb0a8ab589c, type: 3}
 --- !u!1 &1355413433
 GameObject:
@@ -545,8 +590,8 @@ MonoBehaviour:
       player1ID: 
       player2ID: 
   PlayerPositions:
-  - {fileID: 616467355}
   - {fileID: 14086433}
+  - {fileID: 616467355}
   gameState: 0
 --- !u!4 &1355413435
 Transform:

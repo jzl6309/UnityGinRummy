@@ -12,8 +12,6 @@ GameObject:
   - component: {fileID: 2507501390003133241}
   - component: {fileID: 8853759097137729611}
   - component: {fileID: -4476332236739642520}
-  - component: {fileID: 1299652815}
-  - component: {fileID: 1299652816}
   m_Layer: 0
   m_Name: Card
   m_TagString: Untagged
@@ -130,45 +128,3 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1.4, y: 1.9}
   m_EdgeRadius: 0
---- !u!61 &1299652815
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2340750511870466341}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.4, y: 1.9}
-    newSize: {x: 1.4, y: 1.9}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1.4, y: 1.9}
-  m_EdgeRadius: 0
---- !u!114 &1299652816
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2340750511870466341}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1aae3a87be39ead4ea85ccb4413f6f7d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Atlas: {fileID: 4343727234628468602, guid: 57b918ea10a2784469120a8cfe29e271, type: 2}
-  Suit: -1
-  Rank: -1
-  OwnerId: 

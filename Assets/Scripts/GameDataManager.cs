@@ -72,5 +72,10 @@ namespace UnityGinRummy
             protectedData.AddCardValuesToPlayer(player1, player1Cards);
             protectedData.AddCardValuesToPlayer(player2, player2Cards);
         }
+
+        public List<byte> PlayerCards(Player player)
+        {
+            return protectedData.PlayerCards(player);
+        }
     }
 }

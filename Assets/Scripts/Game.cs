@@ -21,12 +21,15 @@ namespace UnityGinRummy
 
         public enum GameState
         {
-            Idel,
+            Waiting,
             GameStarted,
+            FirstTurn,
+            SelectDraw,
+            SelectDiscard,
             GameFinished
         };
 
-        public GameState gameState = GameState.Idel;
+        public GameState gameState = GameState.Waiting;
 
         private void Awake()
         {
@@ -56,14 +59,15 @@ namespace UnityGinRummy
         {
             if (gameState > GameState.GameStarted)
             {
-                
+                CheckForMelds();
+                ShowAndHidePlayersCards();
             }
 
             switch (gameState)
             {
-                case GameState.Idel:
+                case GameState.Waiting:
                     {
-                        Debug.Log("Idelling");
+                        Debug.Log("Waiting");
                         break;
                     }
                 case GameState.GameStarted:
@@ -72,6 +76,7 @@ namespace UnityGinRummy
                         OnGameStart();
                         break;
                     }
+                
                 case GameState.GameFinished:
                     {
                         Debug.Log("The Game is finished");
@@ -112,6 +117,23 @@ namespace UnityGinRummy
             {
                 currentTurnPlayer = remotePlayer;
             }
+        }
+
+        public void CheckForMelds()
+        {
+            List<byte> playersCards = gameDataManager.PlayerCards(localPlayer);
+            localPlayer.SetCardValues(playersCards);
+        }
+
+        public void ShowAndHidePlayersCards()
+        {
+            localPlayer.ShowCards();
+            remotePlayer.HideCards();
+        }
+
+        public void OnCardSelected(Card card)
+        {
+
         }
     }
 }

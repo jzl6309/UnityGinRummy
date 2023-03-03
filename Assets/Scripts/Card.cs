@@ -44,6 +44,7 @@ namespace UnityGinRummy
         string SpriteName()
         {
             string spriteName = $"{Suit}{GetRankDescription()}";
+            //Debug.Log("spriteName is " + spriteName);
             return spriteName; 
         }
 
@@ -54,7 +55,7 @@ namespace UnityGinRummy
             return attributes[0].Description;
         }
 
-        public void setFaceUp(bool value)
+        public void SetFaceUp(bool value)
         {
             faceUp = value;
             UpdateSprite();
@@ -87,5 +88,7 @@ namespace UnityGinRummy
         {
             spriteRenderer.sortingOrder = order;
         }
+
+       
     }
 }
