@@ -10,15 +10,17 @@ namespace UnityGinRummy
     {
         Player localPlayer;
         Player remotePlayer;
+        Player faceUpPile;
 
         [SerializeField]
         ProtectedData protectedData;
 
 
-        public GameDataManager(Player local, Player remote)
+        public GameDataManager(Player local, Player remote, Player cardPile)    
         {
             localPlayer = local;
             remotePlayer = remote;
+            faceUpPile = cardPile;
             protectedData = new ProtectedData(localPlayer.PlayerId, remotePlayer.PlayerId);
         }
 
@@ -45,7 +47,7 @@ namespace UnityGinRummy
             protectedData.SetPoolOfCards(poolOfCards);
         }
 
-        public void Deal(Player player1, Player player2)
+        public void Deal(Player player1, Player player2, Player pile)
         {
             List<byte> poolOfCards = protectedData.GetPoolOfCards();
 
@@ -57,8 +59,9 @@ namespace UnityGinRummy
 
             List<byte> player1Cards = new List<byte>();
             List<byte> player2Cards = new List<byte>();
+            List<byte> faceUpCards = new List<byte>();
 
-            for (int i = 0; i < cards.Count; i++)
+            for (int i = 0; i < cards.Count - 1; i++)
             {
                 if (i % 2 == 0)
                 {
@@ -69,8 +72,29 @@ namespace UnityGinRummy
                     player2Cards.Add(cards[i]);
                 }
             }
+            
+            faceUpCards.Add(cards[cards.Count - 1]);
+            
             protectedData.AddCardValuesToPlayer(player1, player1Cards);
             protectedData.AddCardValuesToPlayer(player2, player2Cards);
+            protectedData.AddCardValuesToPlayer(pile, faceUpCards);
+        }
+
+        public byte DrawCard()
+        {
+            List<byte> poolOfCards = protectedData.GetPoolOfCards();
+
+            int numCardsInPool = poolOfCards.Count;
+
+            if (numCardsInPool > 0)
+            {
+                byte val = poolOfCards[numCardsInPool - 1];
+                poolOfCards.Remove(val);
+
+                return val;
+            }
+
+            return Constants.NO_MORE_CARDS; 
         }
 
         public List<byte> PlayerCards(Player player)

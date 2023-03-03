@@ -33,6 +33,7 @@ namespace UnityGinRummy
         {
             if (faceUp)
             {
+                //Debug.Log("in Update sprite");
                 spriteRenderer.sprite = Atlas.GetSprite(SpriteName());
             }
             else

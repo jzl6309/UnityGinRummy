@@ -81,19 +81,20 @@ namespace UnityGinRummy
              }
         }
 
-        public void DealDisplayCards(Player player1, Player player2)
+        public void DealDisplayCards(Player player1, Player player2, Player pile)
         {
             int start = DisplayingCards.Count - 1;
             int stop = DisplayingCards.Count - Constants.INITIAL_CARDS - 1;
 
             List<Card> cardsToRemoveFromDeck = new List<Card>();
 
+            Card card = null;
             int p = 0;
-            for (int i = start; i > stop; i--)
+            for (int i = start; i > stop + 1; i--)
             {
-                Card card = DisplayingCards[i];
-                
-                if (p%2 == 0)
+                card = DisplayingCards[i];
+
+                if (p % 2 == 0)
                 {
                     p++;
                     player1.ReceiveDisplayCard(card);
@@ -107,15 +108,19 @@ namespace UnityGinRummy
                     cardsToRemoveFromDeck.Add(card);
                     AddCardAnimation(card, player2.NextCardPosition());
                 }
-
-                foreach (Card c in cardsToRemoveFromDeck)
-                    DisplayingCards.Remove(c);
             }
+
+            card = DisplayingCards[stop + 1];
+            pile.ReceiveDisplayCard(card);
+            cardsToRemoveFromDeck.Add(card);
+            AddCardAnimation(card, pile.NextDiscardPosition());
+
+            foreach (Card c in cardsToRemoveFromDeck)
+                DisplayingCards.Remove(c);
         }
 
         public void AddCardAnimation(Card card, Vector2 pos)
         {
-
             CardAnimation cardAnimation = new CardAnimation(card, pos);
             cardAnimations.Enqueue(cardAnimation);
             working = true;

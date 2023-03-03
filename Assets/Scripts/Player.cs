@@ -23,7 +23,6 @@ namespace UnityGinRummy
             DisplayingCards.Add(card);
             card.OwnerId = PlayerId;
             NumberOfDisplayedCards++;
-          
         }
 
         public Vector2 NextCardPosition()
@@ -32,9 +31,15 @@ namespace UnityGinRummy
             return nextPos;
         }
 
-        public bool Equals(Player them)
+        public Vector2 NextDiscardPosition()
         {
-            if (PlayerId.Equals(them.PlayerId))
+            Vector2 nextPos = Position + Vector2.right * Constants.DECK_CARD_POSITION_OFFSET * NumberOfDisplayedCards;
+            return nextPos;
+        }
+
+        public bool Equals(Player that)
+        {
+            if (PlayerId.Equals(that.PlayerId))
             {
                 return true;
             }
@@ -64,7 +69,7 @@ namespace UnityGinRummy
         {
             if (DisplayingCards.Count != vals.Count)
             {
-                Debug.LogError("Somethings wrong in Player.SetCardValues");
+                Debug.LogError("Somethings wrong in Player.SetCardValues\n" + "DisplayingCards count " + DisplayingCards.Count + " vals count " + vals.Count);
                 return;
             }
 

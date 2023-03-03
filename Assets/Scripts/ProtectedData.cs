@@ -10,6 +10,8 @@ namespace UnityGinRummy
         [SerializeField]
         List<byte> poolOfCards = new List<byte>();
         [SerializeField]
+        List<byte> faceUpCardPile = new List<byte>();
+        [SerializeField]
         List<byte> player1Cards = new List<byte>();
         [SerializeField]
         List<byte> player2Cards = new List<byte>();
@@ -42,9 +44,13 @@ namespace UnityGinRummy
             {
                 player1Cards.AddRange(cards);
             }
-            else
+            else if (player.PlayerId.Equals(player2ID))
             {
                 player2Cards.AddRange(cards);
+            }
+            else
+            {
+                faceUpCardPile.AddRange(cards);
             }
         }
 
@@ -54,9 +60,13 @@ namespace UnityGinRummy
             {
                 return player1Cards;
             }
-            else
+            else if (player.PlayerId.Equals(player2ID))
             {
                 return player2Cards;
+            }
+            else
+            {
+                return faceUpCardPile;
             }
 
         }

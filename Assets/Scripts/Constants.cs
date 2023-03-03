@@ -6,12 +6,13 @@ namespace UnityGinRummy
     public static class Constants
     {
         public const string CARD_BACK = "Card_Back";
-        public const int INITIAL_CARDS = 20;
+        public const int INITIAL_CARDS = 21;
         public const float CARD_MOVEMENT_SPEED = 30.0f;
         public const float CARD_ROTATION_SPEED = 8f;
         public const float CARD_SNAP_DISTANCE = 0.01f;
         public const float DECK_CARD_POSITION_OFFSET = 0.005f;
         public const float PLAYER_CARD_POSITION_OFFSET = 0.7f;
+        public const byte NO_MORE_CARDS = 255;
     }
 
     public enum Suits

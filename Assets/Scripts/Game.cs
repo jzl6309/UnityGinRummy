@@ -15,6 +15,7 @@ namespace UnityGinRummy
 
         Player localPlayer;
         Player remotePlayer;
+        Player faceUpPile;
         Player currentTurnPlayer;
 
         public List<Transform> PlayerPositions = new List<Transform>();
@@ -44,6 +45,11 @@ namespace UnityGinRummy
             remotePlayer.Position = PlayerPositions[1].position;
             remotePlayer.isBot = true;
 
+            faceUpPile = new Player();
+            faceUpPile.PlayerId = "Face Up Pile";
+            faceUpPile.PlayerName = "Face Up Pile";
+            faceUpPile.Position = PlayerPositions[2].position;
+
             cardAnimator = FindObjectOfType<CardAnimator>();
 
         }
@@ -59,8 +65,9 @@ namespace UnityGinRummy
         {
             if (gameState > GameState.GameStarted)
             {
+                SetFaceUpPile();
                 CheckForMelds();
-                ShowAndHidePlayersCards();
+                ShowAndHideCards();
             }
 
             switch (gameState)
@@ -76,7 +83,12 @@ namespace UnityGinRummy
                         OnGameStart();
                         break;
                     }
-                
+                case GameState.FirstTurn:
+                    {
+                        Debug.Log("First Turn");
+                        OnFirstTurn();
+                        break;
+                    }
                 case GameState.GameFinished:
                     {
                         Debug.Log("The Game is finished");
@@ -88,13 +100,17 @@ namespace UnityGinRummy
         
         void OnGameStart()
         {
-            gameDataManager = new GameDataManager(localPlayer, remotePlayer);
+            gameDataManager = new GameDataManager(localPlayer, remotePlayer, faceUpPile);
             gameDataManager.Shuffle();
-            gameDataManager.Deal(localPlayer, remotePlayer);
+            gameDataManager.Deal(localPlayer, remotePlayer, faceUpPile);
 
-            cardAnimator.DealDisplayCards(localPlayer, remotePlayer);
+            cardAnimator.DealDisplayCards(localPlayer, remotePlayer, faceUpPile);
 
             gameState = GameState.GameFinished;
+        }
+        void OnFirstTurn()
+        {
+
         }
 
         public void OnGameFinished()
@@ -125,10 +141,17 @@ namespace UnityGinRummy
             localPlayer.SetCardValues(playersCards);
         }
 
-        public void ShowAndHidePlayersCards()
+        public void SetFaceUpPile()
+        {
+            List<byte> cards = gameDataManager.PlayerCards(faceUpPile);
+            faceUpPile.SetCardValues(cards);
+        }
+
+        public void ShowAndHideCards()
         {
             localPlayer.ShowCards();
             remotePlayer.HideCards();
+            faceUpPile.ShowCards();
         }
 
         public void OnCardSelected(Card card)
