@@ -34,9 +34,6 @@ namespace UnityGinRummy
          */
         public static Dictionary<int, string> idStrMap = new Dictionary<int, string>();
 
-
-
-
         SpriteRenderer spriteRenderer;
 
         bool faceUp = false;
@@ -124,6 +121,16 @@ namespace UnityGinRummy
         public static Card GetCard(int rank, int suit)
         {
             return allcards[(rank-1) * Constants.NUM_SUITS + suit];
+        }
+
+        public static Ranks GetRank(byte value)
+        {
+            return (Ranks)(value / 4 + 1);
+        }
+
+        public static Suits GetSuit(byte value)
+        {
+            return (Suits)(value % 4);
         }
 
         public void OnSelected(bool selected)

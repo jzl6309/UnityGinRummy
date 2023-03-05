@@ -46,14 +46,34 @@ namespace UnityGinRummy
             if (player.PlayerId.Equals(player1ID))
             {
                 player1Cards.AddRange(cards);
+                player1Cards.Sort();
             }
             else if (player.PlayerId.Equals(player2ID))
             {
                 player2Cards.AddRange(cards);
+                player2Cards.Sort();
             }
             else
             {
                 faceUpCardPile.AddRange(cards);
+            }
+        }
+
+        public void AddCardToPlayer(Player player, byte card)
+        {
+            if (player.PlayerId.Equals(player1ID))
+            {
+                player1Cards.Add(card);
+                player1Cards.Sort();
+            }
+            else if (player.PlayerId.Equals(player2ID))
+            {
+                player2Cards.Add(card);
+                player2Cards.Sort();
+            }
+            else
+            {
+                faceUpCardPile.Add(card);
             }
         }
 

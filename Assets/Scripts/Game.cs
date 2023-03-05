@@ -105,6 +105,12 @@ namespace UnityGinRummy
                         //OnOppFirstTurn();
                         break;
                     }
+                case GameState.SelectDiscard:
+                    {
+                        Debug.Log("Select Discard");
+                        OnSelectDiscard();
+                        break;
+                    }
                 case GameState.GameFinished:
                     {
                         Debug.Log("The Game is finished");
@@ -145,6 +151,11 @@ namespace UnityGinRummy
             }
         }
 
+        public void OnSelectDiscard()
+        {
+
+        }
+
         public void OnGameFinished()
         {
 
@@ -183,7 +194,6 @@ namespace UnityGinRummy
         public void CheckForMelds()
         {
             List<byte> playersCards = gameDataManager.PlayerCards(player1);
-            playersCards.Sort();
             player1.SetCardValues(playersCards);
             ShowCurrentMelds(player1);
         }
@@ -199,6 +209,18 @@ namespace UnityGinRummy
             player1.ShowCards();
             player2.HideCards();
             faceUpPile.ShowCards();
+        }
+
+        public void ReceiveCardFromFaceUpPile(Player player)
+        {
+            byte card = gameDataManager.DrawFaceUpCard();
+
+            Debug.Log("face up card is " + Card.GetRank(card) + " " + Card.GetSuit(card));
+
+            cardAnimator.DrawDisplayingCardsFromFaceUpPile(currentTurnPlayer, faceUpPile, card);
+            gameState = GameState.SelectDiscard;
+
+            gameDataManager.AddCardToPlayer(currentTurnPlayer, card);
         }
 
         public void OnCardSelected(Card card)
@@ -230,6 +252,7 @@ namespace UnityGinRummy
                 if (selectedCard != null)
                 {
                     MessageText.text = "Takes the card";
+                    ReceiveCardFromFaceUpPile(currentTurnPlayer);
                 }
                 else
                 {

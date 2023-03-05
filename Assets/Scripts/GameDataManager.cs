@@ -128,6 +128,20 @@ namespace UnityGinRummy
             return Constants.NO_MORE_CARDS; 
         }
 
+        public void AddCardToPlayer(Player player, byte card)
+        {
+            protectedData.AddCardToPlayer(player, card);
+        }
+
+        public byte DrawFaceUpCard()
+        {
+            List<byte> faceUpCards = protectedData.PlayerCards(faceUpPile);
+            byte card = faceUpCards[faceUpCards.Count - 1];
+
+            faceUpCards.Remove(card);
+            return card; 
+        }
+
         public List<byte> PlayerCards(Player player)
         {
             return protectedData.PlayerCards(player);

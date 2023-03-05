@@ -50,6 +50,7 @@ namespace UnityGinRummy
     {
         public GameObject CardPrefab;
         public List<Card> DisplayingCards;
+        public List<Card> FaceUpDisplay;
         public Queue<CardAnimation> cardAnimations;
 
         CardAnimation currentCardAnimation;
@@ -113,10 +114,28 @@ namespace UnityGinRummy
             card = DisplayingCards[stop + 1];
             pile.ReceiveDisplayCard(card);
             cardsToRemoveFromDeck.Add(card);
+            FaceUpDisplay.Add(card);
             AddCardAnimation(card, pile.NextDiscardPosition());
 
             foreach (Card c in cardsToRemoveFromDeck)
                 DisplayingCards.Remove(c);
+        }
+
+        public void DrawDisplayingCardsFromFaceUpPile(Player player, Player faceUpPile, byte ID)
+        {
+            int numDisplayCards = FaceUpDisplay.Count;
+
+            if (numDisplayCards > 0)
+            {
+                Card card = FaceUpDisplay[numDisplayCards - 1];
+                card.SetCardValue(ID);
+                card.SetFaceUp(true);
+                player.ReceiveDisplayCard(card);
+                AddCardAnimation(card, player.NextCardPosition());
+
+                faceUpPile.Remove(card);
+                FaceUpDisplay.Remove(card);
+            }
         }
 
         public void AddCardAnimation(Card card, Vector2 pos)

@@ -81,6 +81,11 @@ namespace UnityGinRummy
             }
         }
 
+        public void Remove(Card card)
+        {
+            DisplayingCards.Remove(card);
+        }
+
         public List<Card> GetDisplayCards()
         {
             List<Card> cards = new List<Card>();
