@@ -52,8 +52,10 @@ namespace UnityGinRummy
 				cardBitstrings[i] = bitstring;
 				bitstring <<= 1; 
             }
-			
-			
+
+			meldBitstrings = new List<List<long>>();
+			meldBitstringToCardsMap = new Dictionary<long, List<Card>>();
+
 			// build run meld lists
 			for (int suit = 0; suit < Constants.NUM_SUITS; suit++)
             {
@@ -61,6 +63,7 @@ namespace UnityGinRummy
 				{
 					List<long> bitstringList = new List<long>();
 					List<Card> cards = new List<Card>();
+					Debug.Log("runRankStart " + runRankStart + " suit " + suit);
 					Card c = Card.GetCard(runRankStart, suit);
 					cards.Add(c);
 					long meldBitstring = cardBitstrings[c.GetCardId()];
@@ -185,7 +188,6 @@ namespace UnityGinRummy
 			while (queue.Count != 0)
 			{
 				HashSet<int> meldIndexSet = queue.Dequeue();
-				//			System.out.println(meldSet);
 				if (closed.Contains(meldIndexSet))
 					continue;
 				long meldSetBitstring = 0;
@@ -237,7 +239,7 @@ namespace UnityGinRummy
 			int deadwoodPoints = 0;
 			foreach (Card card in hand)
 				if (!melded.Contains(card))
-					deadwoodPoints += DEADWOOD_POINTS[(int)card.Rank];
+					deadwoodPoints += DEADWOOD_POINTS[((int)card.Rank)-1];
 			return deadwoodPoints;
 		}
 
@@ -248,7 +250,7 @@ namespace UnityGinRummy
 		*/
 		public static int getDeadwoodPoints(Card card)
 		{
-			return DEADWOOD_POINTS[(int)card.Rank];
+			return DEADWOOD_POINTS[((int)card.Rank)-1];
 		}
 
 		/**
@@ -260,7 +262,7 @@ namespace UnityGinRummy
 		{
 			int deadwood = 0;
 			foreach (Card card in cards)
-				deadwood += DEADWOOD_POINTS[(int)card.Rank];
+				deadwood += DEADWOOD_POINTS[((int)card.Rank)-1];
 			return deadwood;
 		}
 

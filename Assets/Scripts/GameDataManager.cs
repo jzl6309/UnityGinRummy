@@ -84,6 +84,33 @@ namespace UnityGinRummy
             protectedData.AddCardValuesToPlayer(pile, faceUpCards);
         }
 
+        public List<List<Card>> GetMelds(Player player)
+        {
+            List<byte> cardBytes = protectedData.PlayerCards(player);
+            List<Card> cards = new List<Card>();
+
+            foreach (byte b in cardBytes)
+                cards.Add((Card)Card.allcards[b].Clone());
+
+            List<List<List<Card>>> melds = GinRummyUtil.cardsToBestMeldSets(cards);
+
+            if (melds.Count == 0)
+            {
+                Debug.Log("Player " + player + " has " + cards + " with " + GinRummyUtil.getDeadwoodPoints(cards) + " deadwood.\n");
+                return null;
+            }
+            else
+            {
+                List<List<Card>> bestMelds = melds[0];
+                foreach (List<Card> meld in bestMelds)
+                    foreach (Card card in meld)
+                        cards.Remove(card);
+                bestMelds.Add(cards);
+                Debug.Log("Player " + player + " has " + bestMelds + " with " + GinRummyUtil.getDeadwoodPoints(cards) + " deadwood.\n");
+                return bestMelds;
+            }
+        }
+
         public byte DrawCard()
         {
             List<byte> poolOfCards = protectedData.GetPoolOfCards();

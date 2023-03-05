@@ -119,6 +119,7 @@ namespace UnityGinRummy
             gameDataManager = new GameDataManager(player1, player2, faceUpPile);
             gameDataManager.Shuffle();
             gameDataManager.Deal(player1, player2, faceUpPile);
+            GinRummyUtil.initialzeMeldTools();
 
             cardAnimator.DealDisplayCards(player1, player2, faceUpPile);
 
@@ -173,10 +174,18 @@ namespace UnityGinRummy
             }
         }
 
+        public void ShowCurrentMelds(Player player)
+        {
+            gameDataManager.GetMelds(player);
+
+        }
+
         public void CheckForMelds()
         {
             List<byte> playersCards = gameDataManager.PlayerCards(player1);
+            playersCards.Sort();
             player1.SetCardValues(playersCards);
+            ShowCurrentMelds(player1);
         }
 
         public void SetFaceUpPile()
@@ -194,11 +203,6 @@ namespace UnityGinRummy
 
         public void OnCardSelected(Card card)
         {
-            Debug.Log("Rank " + card.Rank + " Suit " + card.Suit);
-            int suit = (int)card.Suit;
-            int rank = (int)card.Rank;
-            Card c = Card.GetCard(rank, suit);
-            Debug.Log("Card 2 rank " + c.Rank + " suit " + c.Suit); 
             if (gameState == GameState.FirstTurn)
             {
                 if (card.OwnerId == faceUpPile.PlayerId)

@@ -81,6 +81,16 @@ namespace UnityGinRummy
             }
         }
 
+        public List<Card> GetDisplayCards()
+        {
+            List<Card> cards = new List<Card>();
+
+            foreach (Card card in DisplayingCards)
+                cards.Add((Card)card.Clone());
+
+            return cards;
+        }
+
         public Boolean willDrawFaceUpCard(Card card)
         {
             return false;
