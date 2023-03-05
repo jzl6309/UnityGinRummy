@@ -4,19 +4,26 @@ using System.Linq;
 using UnityEngine;
 using Unity;
 using UnityEngine.UI;
+using System;
 
 namespace UnityGinRummy
 {
     public class Game : MonoBehaviour
     {
         public GameDataManager gameDataManager;
+        public Text MessageText;
+        public Text ButtonText;
 
         CardAnimator cardAnimator;
 
-        Player localPlayer;
-        Player remotePlayer;
+        Player player1;
+        Player player2;
         Player faceUpPile;
         Player currentTurnPlayer;
+
+        Card selectedCard;
+
+        int numTurns = 0;
 
         public List<Transform> PlayerPositions = new List<Transform>();
 
@@ -25,8 +32,11 @@ namespace UnityGinRummy
             Waiting,
             GameStarted,
             FirstTurn,
+            OppFirstTurn,
             SelectDraw,
             SelectDiscard,
+            OppSelectDraw,
+            OppSelectDiscard,
             GameFinished
         };
 
@@ -34,16 +44,16 @@ namespace UnityGinRummy
 
         private void Awake()
         {
-            localPlayer = new Player();
-            localPlayer.PlayerId = "Player 1";
-            localPlayer.PlayerName = "Player 1";
-            localPlayer.Position = PlayerPositions[0].position;
+            player1 = new Player();
+            player1.PlayerId = "Player 1";
+            player1.PlayerName = "Player 1";
+            player1.Position = PlayerPositions[0].position;
 
-            remotePlayer = new Player();
-            remotePlayer.PlayerId = "Player 2";
-            remotePlayer.PlayerName = "Gin Rummy Bot";
-            remotePlayer.Position = PlayerPositions[1].position;
-            remotePlayer.isBot = true;
+            player2 = new Player();
+            player2.PlayerId = "Player 2";
+            player2.PlayerName = "Gin Rummy Bot";
+            player2.Position = PlayerPositions[1].position;
+            player2.isBot = true;
 
             faceUpPile = new Player();
             faceUpPile.PlayerId = "Face Up Pile";
@@ -89,6 +99,12 @@ namespace UnityGinRummy
                         OnFirstTurn();
                         break;
                     }
+                case GameState.OppFirstTurn:
+                    {
+                        Debug.Log("Opponent's First Turn");
+                        //OnOppFirstTurn();
+                        break;
+                    }
                 case GameState.GameFinished:
                     {
                         Debug.Log("The Game is finished");
@@ -100,17 +116,32 @@ namespace UnityGinRummy
         
         void OnGameStart()
         {
-            gameDataManager = new GameDataManager(localPlayer, remotePlayer, faceUpPile);
+            gameDataManager = new GameDataManager(player1, player2, faceUpPile);
             gameDataManager.Shuffle();
-            gameDataManager.Deal(localPlayer, remotePlayer, faceUpPile);
+            gameDataManager.Deal(player1, player2, faceUpPile);
 
-            cardAnimator.DealDisplayCards(localPlayer, remotePlayer, faceUpPile);
+            cardAnimator.DealDisplayCards(player1, player2, faceUpPile);
 
-            gameState = GameState.GameFinished;
+            gameState = GameState.FirstTurn;
         }
         void OnFirstTurn()
         {
+            numTurns++;
+            SwitchTurns();
+            if (currentTurnPlayer == player1)
+            {
+                MessageText.text = "Take Face Up Card?";
+                ButtonText.text = "Pass";
+            }
+            else if (currentTurnPlayer == player2)
+            {
+                MessageText.text = "Oppenent's Turn";
+                
+            }
+            if (currentTurnPlayer.isBot)
+            {
 
+            }
         }
 
         public void OnGameFinished()
@@ -125,38 +156,83 @@ namespace UnityGinRummy
 
         public void SwitchTurns()
         {
-            if (currentTurnPlayer == null | currentTurnPlayer == remotePlayer)
+            if (currentTurnPlayer == null)
             {
-                currentTurnPlayer = localPlayer;
+                var rand = new System.Random();
+                int n = rand.Next(2);
+                if (n == 0) currentTurnPlayer = player1;
+                else currentTurnPlayer = player2;
             }
-            else
+            else if (currentTurnPlayer == player1)
             {
-                currentTurnPlayer = remotePlayer;
+                currentTurnPlayer = player2;
+            }
+            else if (currentTurnPlayer == player2)
+            {
+                currentTurnPlayer = player1;
             }
         }
 
         public void CheckForMelds()
         {
-            List<byte> playersCards = gameDataManager.PlayerCards(localPlayer);
-            localPlayer.SetCardValues(playersCards);
+            List<byte> playersCards = gameDataManager.PlayerCards(player1);
+            player1.SetCardValues(playersCards);
         }
 
         public void SetFaceUpPile()
         {
-            List<byte> cards = gameDataManager.PlayerCards(faceUpPile);
-            faceUpPile.SetCardValues(cards);
+            List<byte> faceUpCards = gameDataManager.PlayerCards(faceUpPile);
+            faceUpPile.SetCardValues(faceUpCards);
         }
 
         public void ShowAndHideCards()
         {
-            localPlayer.ShowCards();
-            remotePlayer.HideCards();
+            player1.ShowCards();
+            player2.HideCards();
             faceUpPile.ShowCards();
         }
 
         public void OnCardSelected(Card card)
         {
+            Debug.Log("Rank " + card.Rank + " Suit " + card.Suit);
+            int suit = (int)card.Suit;
+            int rank = (int)card.Rank;
+            Card c = Card.GetCard(rank, suit);
+            Debug.Log("Card 2 rank " + c.Rank + " suit " + c.Suit); 
+            if (gameState == GameState.FirstTurn)
+            {
+                if (card.OwnerId == faceUpPile.PlayerId)
+                {
+                    if (selectedCard != null && selectedCard.isSelected)
+                    {
+                        selectedCard.OnSelected(false);
+                        selectedCard = null;
+                        ButtonText.text = "Pass";
+                    }
+                    else
+                    {
+                        selectedCard = card;
+                        selectedCard.OnSelected(true);
+                        ButtonText.text = "Take Card";
+                    }
+                }
+            }
+        }
 
+        public void OnOkSelected()
+        {
+            if (gameState == GameState.FirstTurn)
+            {
+                if (selectedCard != null)
+                {
+                    MessageText.text = "Takes the card";
+                }
+                else
+                {
+                    MessageText.text = "Pass";
+                    GameFlow();
+                }
+            }
         }
     }
 }

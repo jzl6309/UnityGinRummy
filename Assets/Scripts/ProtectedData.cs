@@ -20,12 +20,15 @@ namespace UnityGinRummy
         string player1ID;
         [SerializeField]
         string player2ID;
+        [SerializeField]
+        string faceUpID;
 
 
-        public ProtectedData(string p1ID, string p2ID)
+        public ProtectedData(string p1ID, string p2ID, string cardPileID)
         {
             player1ID = p1ID;
             player2ID = p2ID;
+            faceUpID = cardPileID;
         }
 
         public void SetPoolOfCards(List<byte> cards)

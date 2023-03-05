@@ -69,9 +69,9 @@ namespace UnityGinRummy
         void InitializeDeck()
         {
             DisplayingCards = new List<Card>();
-            for (byte value = 0; value < 52; value++)
+            for (byte i = 0; i < 52; i++)
             {
-                Vector2 newPosition = startPosition + Vector2.right * Constants.DECK_CARD_POSITION_OFFSET * value;
+                Vector2 newPosition = startPosition + Vector2.right * Constants.DECK_CARD_POSITION_OFFSET * i;
                 GameObject newGameObject = Instantiate(CardPrefab, newPosition, Quaternion.identity);
                 newGameObject.transform.parent = transform;
                 Card card = newGameObject.GetComponent<Card>();

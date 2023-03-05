@@ -18,10 +18,10 @@ namespace UnityGinRummy
         // Update is called once per frame
         void Update()
         {
-             if (Input.GetMouseButtonUp(0))
+            if (Input.GetMouseButtonUp(0))
             {
                 Card card = MouseOverCard();
-
+                
                 if (card != null)
                 {
                     OnCardSelected.Invoke(card);

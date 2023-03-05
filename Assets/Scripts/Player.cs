@@ -19,9 +19,9 @@ namespace UnityGinRummy
         public List<Card> DisplayingCards = new List<Card>();
 
         public void ReceiveDisplayCard(Card card)
-        {
-            DisplayingCards.Add(card);
+        {   
             card.OwnerId = PlayerId;
+            DisplayingCards.Add(card);
             NumberOfDisplayedCards++;
         }
 
@@ -79,6 +79,11 @@ namespace UnityGinRummy
                 card.SetCardValue(vals[i]);
                 card.SetDisplayOrder(i);
             }
+        }
+
+        public Boolean willDrawFaceUpCard(Card card)
+        {
+            return false;
         }
     }
 }

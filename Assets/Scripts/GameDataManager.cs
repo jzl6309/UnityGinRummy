@@ -8,20 +8,20 @@ namespace UnityGinRummy
     [Serializable]
     public class GameDataManager
     {
-        Player localPlayer;
-        Player remotePlayer;
+        Player player1;
+        Player player2;
         Player faceUpPile;
 
         [SerializeField]
         ProtectedData protectedData;
 
 
-        public GameDataManager(Player local, Player remote, Player cardPile)    
+        public GameDataManager(Player one, Player two, Player cardPile)    
         {
-            localPlayer = local;
-            remotePlayer = remote;
+            player1 = one;
+            player2 = two;
             faceUpPile = cardPile;
-            protectedData = new ProtectedData(localPlayer.PlayerId, remotePlayer.PlayerId);
+            protectedData = new ProtectedData(player1.PlayerId, player2.PlayerId, faceUpPile.PlayerId);
         }
 
         public void Shuffle()
@@ -31,6 +31,10 @@ namespace UnityGinRummy
             for (byte code = 0; code < 52; code++)
             {
                 cardValues.Add(code);
+                Card card = new Card();
+                card.SetCardValue(code);
+                card.SetCardId(code);
+                Card.AddCard(card);
             }
 
             List<byte> poolOfCards = new List<byte>();
