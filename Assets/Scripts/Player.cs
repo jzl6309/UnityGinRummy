@@ -97,6 +97,16 @@ namespace UnityGinRummy
             return cards;
         }
 
+        public void ResetDisplayCards(CardAnimator ca)
+        {
+            NumberOfDisplayedCards = 0;
+            foreach (Card card in DisplayingCards)
+            {
+                NumberOfDisplayedCards++;
+                ca.AddCardAnimation(card, NextCardPosition());
+            }
+        }
+
         public Boolean willDrawFaceUpCard(Card card)
         {
             return false;

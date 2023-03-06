@@ -106,7 +106,7 @@ namespace UnityGinRummy
                 case GameState.SelectDraw:
                     {
                         Debug.Log("Select Draw");
-                        //OnSelectDraw();
+                        OnSelectDraw();
                         break;
                     }
                 case GameState.SelectDiscard:
@@ -154,6 +154,19 @@ namespace UnityGinRummy
         {
             gameState = GameState.FirstTurn;
             GameFlow();
+        }
+
+        void OnSelectDraw()
+        {
+            if (currentTurnPlayer == player1)
+            {
+                MessageText.text = "Draw a card";
+                ButtonText.text = "Draw";
+            }
+            else if (currentTurnPlayer == player2)
+            {
+                SwitchTurns();
+            }
         }
 
         void OnSelectDiscard()
@@ -234,6 +247,24 @@ namespace UnityGinRummy
             gameDataManager.AddCardToPlayer(player, card);
         }
 
+        public void DrawCard()
+        {
+            if (selectedCard == null) { 
+                byte card =  gameDataManager.DrawCard();
+                gameDataManager.AddCardToPlayer(currentTurnPlayer, card);
+
+                cardAnimator.DrawDisplayCard(currentTurnPlayer, selectedCard);
+
+                currentTurnPlayer.ResetDisplayCards(cardAnimator);
+                selectedCard = null;
+            }
+            else
+            {
+                ReceiveCardFromFaceUpPile(currentTurnPlayer);
+                selectedCard = null;
+            }
+        }
+
         public void Discard(Player player)
         {
             byte card = selectedCard.GetCardId((int)selectedCard.Rank,(int)selectedCard.Suit);
@@ -244,7 +275,8 @@ namespace UnityGinRummy
             gameDataManager.AddCardToPlayer(faceUpPile, card);
 
             cardAnimator.DiscardDisplayCardsToFaceUpPile(player, faceUpPile, card);
-            
+            player.ResetDisplayCards(cardAnimator);
+
             selectedCard = null;
         }
 
@@ -268,9 +300,27 @@ namespace UnityGinRummy
                     }
                 }
             }
+            else if (gameState == GameState.SelectDraw)
+            {
+                if (card.OwnerId == faceUpPile.PlayerId)
+                {
+                    if (selectedCard != null && selectedCard.isSelected)
+                    {
+                        selectedCard.OnSelected(false);
+                        selectedCard = null;
+                        ButtonText.text = "Draw";
+                    }
+                    else
+                    {
+                        selectedCard = card;
+                        selectedCard.OnSelected(true);
+                        ButtonText.text = "Draw";
+                    }
+                }
+            }
             else if (gameState == GameState.SelectDiscard)
             {
-                if (card.OwnerId == currentTurnPlayer.PlayerId && currentTurnPlayer == player1)
+                if (card.OwnerId == currentTurnPlayer.PlayerId)
                 {
                     if (selectedCard != null && selectedCard.isSelected)
                     {
@@ -290,7 +340,7 @@ namespace UnityGinRummy
 
         public void OnOkSelected()
         {
-            if (gameState == GameState.FirstTurn)
+            if (gameState == GameState.FirstTurn && currentTurnPlayer == player1)
             {
                 if (selectedCard != null)
                 {
@@ -307,12 +357,20 @@ namespace UnityGinRummy
                     GameFlow();
                 }
             }
-            else if (gameState == GameState.SelectDiscard && selectedCard != null)
+            else if (gameState == GameState.SelectDraw && currentTurnPlayer == player1)
             {
-                Discard(currentTurnPlayer);
-                Debug.Log("Discard Successful");
-                gameState = GameState.FirstTurn;
+                DrawCard();
+                gameState = GameState.SelectDiscard;
                 GameFlow();
+            }
+            else if (gameState == GameState.SelectDiscard && currentTurnPlayer == player1)
+            {
+                if (selectedCard != null)
+                {
+                    Discard(currentTurnPlayer);
+                    gameState = GameState.SelectDraw;
+                    GameFlow();
+                }
             }
         }
     }

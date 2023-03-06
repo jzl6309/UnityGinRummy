@@ -108,12 +108,13 @@ namespace UnityGinRummy
                 foreach (List<Card> meld in bestMelds)
                     foreach (Card card in meld)
                         cards.Remove(card);
-                bestMelds.Add(cards);
-                Debug.Log("From here Player " + player.PlayerId + " has " + GinRummyUtil.getDeadwoodPoints(cards) + " deadwood.\n");
+                //bestMelds.Add(cards);
+                Debug.Log("Melds: Player " + player.PlayerId + " has " + GinRummyUtil.getDeadwoodPoints(cards) + " deadwood.\n");
                 string meldsStr = "";
                 foreach (List<Card> meld in bestMelds)
                     foreach (Card c in meld)
-                        meldsStr += c.Rank + " of " + c.Suit + " "; 
+                        meldsStr += c.Rank + " of " + c.Suit + ", ";
+                Debug.Log(meldsStr);
 
                 return bestMelds;
             }

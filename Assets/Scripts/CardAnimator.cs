@@ -121,6 +121,21 @@ namespace UnityGinRummy
                 DisplayingCards.Remove(c);
         }
 
+        public void DrawDisplayCard(Player player, Card card)
+        {
+            if (card == null) 
+            { 
+                card = DisplayingCards[DisplayingCards.Count - 1];
+                player.ReceiveDisplayCard(card);
+                AddCardAnimation(card, player.NextCardPosition());
+                DisplayingCards.Remove(card);
+            }
+            else
+            {
+
+            }
+
+        }
         public void DrawDisplayingCardsFromFaceUpPile(Player player, Player faceUpPile, byte ID)
         {
             int numDisplayCards = FaceUpDisplay.Count;
@@ -149,8 +164,8 @@ namespace UnityGinRummy
                     c.SetFaceUp(true);
                     faceUpPile.ReceiveDisplayCard(c);
                     FaceUpDisplay.Add(c);
-                    AddCardAnimation(card, faceUpPile.NextCardPosition());
-                   
+                    AddCardAnimation(c, faceUpPile.NextDiscardPosition());
+
                     player.Remove(card);
                     break;
                 }
