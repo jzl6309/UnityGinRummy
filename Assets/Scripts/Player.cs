@@ -69,7 +69,7 @@ namespace UnityGinRummy
         {
             if (DisplayingCards.Count != vals.Count)
             {
-                Debug.LogError("Somethings wrong in Player.SetCardValues\n" + "DisplayingCards count " + DisplayingCards.Count + " vals count " + vals.Count);
+                Debug.LogError("Somethings wrong with " + PlayerId + "s cards in Player.SetCardValues\n" + "DisplayingCards count " + DisplayingCards.Count + " vals count " + vals.Count);
                 return;
             }
 
@@ -84,6 +84,7 @@ namespace UnityGinRummy
         public void Remove(Card card)
         {
             DisplayingCards.Remove(card);
+            NumberOfDisplayedCards--;
         }
 
         public List<Card> GetDisplayCards()

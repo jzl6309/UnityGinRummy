@@ -23,8 +23,6 @@ namespace UnityGinRummy
 
         Card selectedCard;
 
-        int numTurns = 0;
-
         public List<Transform> PlayerPositions = new List<Transform>();
 
         public enum GameState
@@ -32,7 +30,7 @@ namespace UnityGinRummy
             Waiting,
             GameStarted,
             FirstTurn,
-            OppFirstTurn,
+            FirstTurnPass,
             SelectDraw,
             SelectDiscard,
             OppSelectDraw,
@@ -99,10 +97,16 @@ namespace UnityGinRummy
                         OnFirstTurn();
                         break;
                     }
-                case GameState.OppFirstTurn:
+                case GameState.FirstTurnPass:
                     {
-                        Debug.Log("Opponent's First Turn");
-                        //OnOppFirstTurn();
+                        Debug.Log("First Turn Pass");
+                        OnFirstTurnPass();
+                        break;
+                    }
+                case GameState.SelectDraw:
+                    {
+                        Debug.Log("Select Draw");
+                        //OnSelectDraw();
                         break;
                     }
                 case GameState.SelectDiscard:
@@ -133,7 +137,6 @@ namespace UnityGinRummy
         }
         void OnFirstTurn()
         {
-            numTurns++;
             SwitchTurns();
             if (currentTurnPlayer == player1)
             {
@@ -143,17 +146,27 @@ namespace UnityGinRummy
             else if (currentTurnPlayer == player2)
             {
                 MessageText.text = "Oppenent's Turn";
-                
-            }
-            if (currentTurnPlayer.isBot)
-            {
-
+                GameFlow();
             }
         }
 
-        public void OnSelectDiscard()
+        void OnFirstTurnPass()
         {
+            gameState = GameState.FirstTurn;
+            GameFlow();
+        }
 
+        void OnSelectDiscard()
+        {
+            if (currentTurnPlayer == player1)
+            {
+                MessageText.text = "Discard";
+                ButtonText.text = "";
+            }
+            else if (currentTurnPlayer == player2)
+            {
+                SwitchTurns();
+            }
         }
 
         public void OnGameFinished()
@@ -188,7 +201,6 @@ namespace UnityGinRummy
         public void ShowCurrentMelds(Player player)
         {
             gameDataManager.GetMelds(player);
-
         }
 
         public void CheckForMelds()
@@ -217,17 +229,30 @@ namespace UnityGinRummy
 
             Debug.Log("face up card is " + Card.GetRank(card) + " " + Card.GetSuit(card));
 
-            cardAnimator.DrawDisplayingCardsFromFaceUpPile(currentTurnPlayer, faceUpPile, card);
-            gameState = GameState.SelectDiscard;
+            cardAnimator.DrawDisplayingCardsFromFaceUpPile(player, faceUpPile, card);
 
-            gameDataManager.AddCardToPlayer(currentTurnPlayer, card);
+            gameDataManager.AddCardToPlayer(player, card);
+        }
+
+        public void Discard(Player player)
+        {
+            byte card = selectedCard.GetCardId((int)selectedCard.Rank,(int)selectedCard.Suit);
+
+            Debug.Log(Card.GetRank(card) + " of " + Card.GetSuit(card));
+
+            gameDataManager.RemoveCardFromPlayer(player, card);
+            gameDataManager.AddCardToPlayer(faceUpPile, card);
+
+            cardAnimator.DiscardDisplayCardsToFaceUpPile(player, faceUpPile, card);
+            
+            selectedCard = null;
         }
 
         public void OnCardSelected(Card card)
         {
             if (gameState == GameState.FirstTurn)
             {
-                if (card.OwnerId == faceUpPile.PlayerId)
+                if (card.OwnerId == faceUpPile.PlayerId && currentTurnPlayer == player1)
                 {
                     if (selectedCard != null && selectedCard.isSelected)
                     {
@@ -243,6 +268,24 @@ namespace UnityGinRummy
                     }
                 }
             }
+            else if (gameState == GameState.SelectDiscard)
+            {
+                if (card.OwnerId == currentTurnPlayer.PlayerId && currentTurnPlayer == player1)
+                {
+                    if (selectedCard != null && selectedCard.isSelected)
+                    {
+                        selectedCard.OnSelected(false);
+                        selectedCard = null;
+                        ButtonText.text = "";
+                    }
+                    else
+                    {
+                        selectedCard = card;
+                        selectedCard.OnSelected(true);
+                        ButtonText.text = "Discard";
+                    }
+                }
+            }
         }
 
         public void OnOkSelected()
@@ -252,13 +295,24 @@ namespace UnityGinRummy
                 if (selectedCard != null)
                 {
                     MessageText.text = "Takes the card";
+                    selectedCard = null;
                     ReceiveCardFromFaceUpPile(currentTurnPlayer);
+                    gameState = GameState.SelectDiscard;
+                    GameFlow();
                 }
                 else
                 {
                     MessageText.text = "Pass";
+                    gameState = GameState.FirstTurnPass;
                     GameFlow();
                 }
+            }
+            else if (gameState == GameState.SelectDiscard && selectedCard != null)
+            {
+                Discard(currentTurnPlayer);
+                Debug.Log("Discard Successful");
+                gameState = GameState.FirstTurn;
+                GameFlow();
             }
         }
     }

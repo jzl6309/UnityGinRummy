@@ -113,6 +113,11 @@ namespace UnityGinRummy
             return cardId;
         }
 
+        public byte GetCardId(int rank, int suit)
+        {
+            return (byte)((rank - 1) * Constants.NUM_SUITS + suit);
+        }
+
         public void SetCardId(byte id)
         {
             cardId = id;

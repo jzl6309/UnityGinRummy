@@ -138,6 +138,25 @@ namespace UnityGinRummy
             }
         }
 
+        public void DiscardDisplayCardsToFaceUpPile(Player player, Player faceUpPile, byte ID)
+        {
+            foreach (Card card in player.DisplayingCards)
+            {
+                if (card.Rank == Card.GetRank(ID) && card.Suit == Card.GetSuit(ID))
+                {
+                    Card c = card;
+                    c.SetCardValue(ID);
+                    c.SetFaceUp(true);
+                    faceUpPile.ReceiveDisplayCard(c);
+                    FaceUpDisplay.Add(c);
+                    AddCardAnimation(card, faceUpPile.NextCardPosition());
+                   
+                    player.Remove(card);
+                    break;
+                }
+            }
+        }
+
         public void AddCardAnimation(Card card, Vector2 pos)
         {
             CardAnimation cardAnimation = new CardAnimation(card, pos);

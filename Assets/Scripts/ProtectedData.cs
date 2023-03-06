@@ -77,6 +77,24 @@ namespace UnityGinRummy
             }
         }
 
+        public void RemoveCardFromPlayer(Player player, byte card)
+        {
+            if (player.PlayerId.Equals(player1ID))
+            {
+                player1Cards.Remove(card);
+                player1Cards.Sort();
+            }
+            else if (player.PlayerId.Equals(player2ID))
+            {
+                player2Cards.Remove(card);
+                player2Cards.Sort();
+            }
+            else
+            {
+                faceUpCardPile.Remove(card);
+            }
+        }
+
         public List<byte> PlayerCards(Player player)
         {
             if (player.PlayerId.Equals(player1ID))

@@ -91,12 +91,15 @@ namespace UnityGinRummy
 
             foreach (byte b in cardBytes)
                 cards.Add((Card)Card.allcards[b].Clone());
-
+            /*
+            foreach (Card c in cards)
+                Debug.Log(c.Rank + " " + c.Suit);
+            */
             List<List<List<Card>>> melds = GinRummyUtil.cardsToBestMeldSets(cards);
 
             if (melds.Count == 0)
             {
-                Debug.Log("Player " + player + " has " + cards + " with " + GinRummyUtil.getDeadwoodPoints(cards) + " deadwood.\n");
+                Debug.Log("Player " + player.PlayerId + " has " + GinRummyUtil.getDeadwoodPoints(cards) + " deadwood.\n"); 
                 return null;
             }
             else
@@ -106,7 +109,12 @@ namespace UnityGinRummy
                     foreach (Card card in meld)
                         cards.Remove(card);
                 bestMelds.Add(cards);
-                Debug.Log("Player " + player + " has " + bestMelds + " with " + GinRummyUtil.getDeadwoodPoints(cards) + " deadwood.\n");
+                Debug.Log("From here Player " + player.PlayerId + " has " + GinRummyUtil.getDeadwoodPoints(cards) + " deadwood.\n");
+                string meldsStr = "";
+                foreach (List<Card> meld in bestMelds)
+                    foreach (Card c in meld)
+                        meldsStr += c.Rank + " of " + c.Suit + " "; 
+
                 return bestMelds;
             }
         }
@@ -126,6 +134,11 @@ namespace UnityGinRummy
             }
 
             return Constants.NO_MORE_CARDS; 
+        }
+
+        public void RemoveCardFromPlayer(Player player, byte card)
+        {
+            protectedData.RemoveCardFromPlayer(player, card);
         }
 
         public void AddCardToPlayer(Player player, byte card)
