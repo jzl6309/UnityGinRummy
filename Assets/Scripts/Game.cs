@@ -152,8 +152,18 @@ namespace UnityGinRummy
 
         void OnFirstTurnPass()
         {
-            gameState = GameState.FirstTurn;
-            GameFlow();
+            if (currentTurnPlayer == player1)
+            {
+                MessageText.text = "Take Face Up Card?";
+                ButtonText.text = "Pass";
+            }
+            else if (currentTurnPlayer == player2)
+            {
+                MessageText.text = "Oppenent's Turn";
+                gameState = GameState.SelectDraw;
+                SwitchTurns();
+                GameFlow();
+            }
         }
 
         void OnSelectDraw()
@@ -269,8 +279,6 @@ namespace UnityGinRummy
         {
             byte card = selectedCard.GetCardId((int)selectedCard.Rank,(int)selectedCard.Suit);
 
-            Debug.Log(Card.GetRank(card) + " of " + Card.GetSuit(card));
-
             gameDataManager.RemoveCardFromPlayer(player, card);
             gameDataManager.AddCardToPlayer(faceUpPile, card);
 
@@ -354,6 +362,7 @@ namespace UnityGinRummy
                 {
                     MessageText.text = "Pass";
                     gameState = GameState.FirstTurnPass;
+                    SwitchTurns();
                     GameFlow();
                 }
             }

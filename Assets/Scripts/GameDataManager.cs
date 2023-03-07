@@ -87,36 +87,38 @@ namespace UnityGinRummy
         public List<List<Card>> GetMelds(Player player)
         {
             List<byte> cardBytes = protectedData.PlayerCards(player);
-            List<Card> cards = new List<Card>();
+            List<Card> unmeldedCards = new List<Card>();
 
             foreach (byte b in cardBytes)
-                cards.Add((Card)Card.allcards[b].Clone());
+                unmeldedCards.Add((Card)Card.allcards[b].Clone());
             /*
             foreach (Card c in cards)
                 Debug.Log(c.Rank + " " + c.Suit);
             */
-            List<List<List<Card>>> melds = GinRummyUtil.cardsToBestMeldSets(cards);
+            List<List<List<Card>>> bestMelds = GinRummyUtil.cardsToBestMeldSets(unmeldedCards);
 
-            if (melds.Count == 0)
+            if (bestMelds.Count == 0)
             {
-                Debug.Log("Player " + player.PlayerId + " has " + GinRummyUtil.getDeadwoodPoints(cards) + " deadwood.\n"); 
+                Debug.Log("Player " + player.PlayerId + " has " + GinRummyUtil.getDeadwoodPoints(unmeldedCards) + " deadwood.\n"); 
                 return null;
             }
             else
             {
-                List<List<Card>> bestMelds = melds[0];
-                foreach (List<Card> meld in bestMelds)
+                List<List<Card>> melds = bestMelds[0];
+                foreach (List<Card> meld in melds)
                     foreach (Card card in meld)
-                        cards.Remove(card);
-                //bestMelds.Add(cards);
-                Debug.Log("Melds: Player " + player.PlayerId + " has " + GinRummyUtil.getDeadwoodPoints(cards) + " deadwood.\n");
-                string meldsStr = "";
-                foreach (List<Card> meld in bestMelds)
-                    foreach (Card c in meld)
-                        meldsStr += c.Rank + " of " + c.Suit + ", ";
-                Debug.Log(meldsStr);
+                        for (int i = 0; i < unmeldedCards.Count; i++)
+                        {
+                            if (card.GetCardId() == unmeldedCards[i].GetCardId())
+                            {
+                                unmeldedCards.RemoveAt(i);
+                            }
+                        }
 
-                return bestMelds;
+                //bestMelds.Add(cards);
+                Debug.Log("Melds: Player " + player.PlayerId + " has " + GinRummyUtil.getDeadwoodPoints(unmeldedCards) + " deadwood.\n");
+
+                return melds;
             }
         }
 

@@ -1,3 +1,36 @@
+/**
+ * Constants and utilities for Gin Rummy.  Meld checking makes use of bitstring representations
+ * where a single long value represents a set of cards.  Each card has an id number i in the range 0-51, and the
+ * presence (1) or absense (0) of that card is represented at bit i (the 2^i place in binary).
+ * This allows fast set difference/intersection/equivalence/etc. operations with bitwise operators.
+ * 
+ * Gin Rummy Rules: https://www.pagat.com/rummy/ginrummy.html
+ * Adopted variant: North American scoring (25 point bonus for undercut, 25 point bonus for going gin)
+ * 
+ * @author Todd W. Neller
+ * @version 1.0
+
+Copyright (C) 2020 Todd Neller
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+Information about the GNU General Public License is available online at:
+  http://www.gnu.org/licenses/
+To receive a copy of the GNU General Public License, write to the Free
+Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+
+ */
+
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -46,7 +79,7 @@ namespace UnityGinRummy
 			for (int rank = 0; rank < Constants.NUM_RANKS; rank++)
 				DEADWOOD_POINTS[rank] = Math.Min(rank + 1, 10);
 
-			long bitstring = 1;
+			long bitstring = 1L;
 			for (int i = 0; i < Constants.NUM_CARDS; i++)
             {
 				cardBitstrings[i] = bitstring;
@@ -63,14 +96,13 @@ namespace UnityGinRummy
 				{
 					List<long> bitstringList = new List<long>();
 					List<Card> cards = new List<Card>();
-					Debug.Log("runRankStart " + runRankStart + " suit " + suit);
 					Card c = Card.GetCard(runRankStart, suit);
 					cards.Add(c);
 					long meldBitstring = cardBitstrings[c.GetCardId()];
 					c = Card.GetCard(runRankStart + 1, suit);
 					cards.Add(c);
 					meldBitstring |= cardBitstrings[c.GetCardId()];
-					for (int rank = runRankStart + 2; rank < Constants.NUM_RANKS; rank++)
+					for (int rank = runRankStart + 2; rank < Constants.NUM_RANKS + 1; rank++)
 					{
 						c = Card.GetCard(rank, suit);
 						cards.Add(c);
@@ -79,9 +111,9 @@ namespace UnityGinRummy
 						List<Card> newList = new List<Card>();
 						foreach (Card card in cards)
 							newList.Add((Card)card.Clone());
-
 						meldBitstringToCardsMap[meldBitstring] = newList;
 					}
+
 					meldBitstrings.Add(bitstringList);
 				}
 			}
@@ -95,22 +127,31 @@ namespace UnityGinRummy
 				for (int suit = 0; suit <= Constants.NUM_SUITS; suit++)
 				{
 					List<Card> cardSet = new List<Card>();
-					foreach (Card c in cards)
+					
+					foreach (Card c in cards) 
 						cardSet.Add((Card)c.Clone());
+						
 
-					if (suit < Constants.NUM_SUITS)
-						cardSet.Remove(Card.GetCard(rank, suit));
+					if (suit < Constants.NUM_SUITS) 
+					{
+						for (int i = 0; i < cardSet.Count; i++)
+                        {
+							if ((int)cardSet[i].Suit == suit)
+								cardSet.RemoveAt(i);
+						}
+					}
 
 					List<long> bitstringList = new List<long>();
 					long meldBitstring = 0L;
+
 					foreach (Card card in cardSet)
 						meldBitstring |= cardBitstrings[card.GetCardId()];
+
 					bitstringList.Add(meldBitstring);
 					meldBitstringToCardsMap[meldBitstring] = cardSet;
 					meldBitstrings.Add(bitstringList);
 				}
 			}
-
 		}
 
 		public static List<Card> bitstringToCards(long bitstring)
@@ -127,7 +168,7 @@ namespace UnityGinRummy
 
 		public static long cardsToBitstring(List<Card> cards)
 		{
-			long bitstring = 0;
+			long bitstring = 0L;
 			foreach (Card card in cards)
 				bitstring |= cardBitstrings[card.GetCardId()];
 			return bitstring;
@@ -162,6 +203,7 @@ namespace UnityGinRummy
 			List<List<Card>> meldList = new List<List<Card>>();
 			foreach (long meldBitstring in cardsToAllMeldBitstrings(cards))
 				meldList.Add(bitstringToCards(meldBitstring));
+
 			return meldList;
 		}
 
@@ -188,9 +230,10 @@ namespace UnityGinRummy
 			while (queue.Count != 0)
 			{
 				HashSet<int> meldIndexSet = queue.Dequeue();
+				
 				if (closed.Contains(meldIndexSet))
 					continue;
-				long meldSetBitstring = 0;
+				long meldSetBitstring = 0L;
 				foreach (int meldIndex in meldIndexSet)
 					meldSetBitstring |= meldBitstrings[meldIndex];
 				closed.Add(meldIndexSet);
@@ -218,6 +261,13 @@ namespace UnityGinRummy
 						long meldBitstring = meldBitstrings[meldIndex];
 						cardSets.Add(bitstringToCards(meldBitstring));
 					}
+					/*
+					string meldsStr = "";
+					foreach (List<Card> meld in cardSets)
+						foreach (Card c in meld)
+							meldsStr += c.Rank + " of " + c.Suit + ", ";
+					Debug.Log(meldsStr);
+					*/
 					maximalMeldSets.Add(cardSets);
 				}
 			}
@@ -289,6 +339,16 @@ namespace UnityGinRummy
 					}
 					bestMeldSets.Add(melds);
 				}
+			}
+
+			if (bestMeldSets.Count != 0) 
+			{ 
+				string meldsStr = "";
+				List<List<Card>> bestmelds = bestMeldSets[0];
+				foreach (List<Card> meld in bestmelds)
+					foreach (Card c in meld)
+						meldsStr += c.Rank + " of " + c.Suit + ", ";
+				Debug.Log("best melds are " + meldsStr);
 			}
 			return bestMeldSets;
 		}
