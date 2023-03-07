@@ -184,7 +184,7 @@ namespace UnityGinRummy
 			List<long> bitstringList = new List<long>();
 			long cardsBitstring = cardsToBitstring(cards);
 			foreach (List<long> meldBitstringList in meldBitstrings)
-				foreach (long meldBitstring in meldBitstringList) { 
+				foreach (long meldBitstring in meldBitstringList) {
 					if ((meldBitstring & cardsBitstring) == meldBitstring)
 						bitstringList.Add(meldBitstring);
 					else
@@ -234,8 +234,10 @@ namespace UnityGinRummy
 				if (closed.Contains(meldIndexSet))
 					continue;
 				long meldSetBitstring = 0L;
-				foreach (int meldIndex in meldIndexSet)
+				foreach (int meldIndex in meldIndexSet) { 
 					meldSetBitstring |= meldBitstrings[meldIndex];
+				}
+
 				closed.Add(meldIndexSet);
 				bool isMaximal = true;
 				for (int i = 0; i < meldBitstrings.Count; i++)
@@ -260,17 +262,33 @@ namespace UnityGinRummy
 					{
 						long meldBitstring = meldBitstrings[meldIndex];
 						cardSets.Add(bitstringToCards(meldBitstring));
-					}
-					/*
-					string meldsStr = "";
+                    }
+
+                    /*
+					string meldsStr = "I am adding ";
 					foreach (List<Card> meld in cardSets)
 						foreach (Card c in meld)
-							meldsStr += c.Rank + " of " + c.Suit + ", ";
+							meldsStr += c.GetCardId() + ", ";
 					Debug.Log(meldsStr);
 					*/
-					maximalMeldSets.Add(cardSets);
+					
+                    maximalMeldSets.Add(cardSets);
+
+					/*
+					string str = "I should have what I just added ";
+					foreach (List<List<Card>> melds in maximalMeldSets)
+					{
+						Debug.Log(str);
+						str = "I should have what I just added ";
+						foreach (List<Card> meld in melds)
+							foreach (Card card in meld)
+								str += card.GetCardId() + ", ";
+					}
+					Debug.Log(str);
+					*/
 				}
 			}
+			
 			return maximalMeldSets;
 		}
 
@@ -282,16 +300,28 @@ namespace UnityGinRummy
 		*/
 		public static int getDeadwoodPoints(List<List<Card>> melds, List<Card> hand)
 		{
-			HashSet<Card> melded = new HashSet<Card>();
+			HashSet<int> melded = new HashSet<int>();
 			foreach (List<Card> meld in melds)
 				foreach (Card card in meld)
-					melded.Add(card);
+					melded.Add(card.GetCardId());
+
 			int deadwoodPoints = 0;
 			foreach (Card card in hand)
-				if (!melded.Contains(card))
-					deadwoodPoints += DEADWOOD_POINTS[((int)card.Rank)-1];
+				if (!contains(melded, card)) { 
+					deadwoodPoints += DEADWOOD_POINTS[((int)card.Rank) - 1];
+				}
 			return deadwoodPoints;
 		}
+
+		// Contains method for compare by val of card object
+		public static bool contains(HashSet<int> melds, Card card)
+        {
+			foreach (int meldedCard in melds)
+				if (card.GetCardId() == meldedCard)
+					return true;
+			
+			return false;
+        }
 
 		/**
 		*Return the deadwood points for an individual given card.
@@ -326,9 +356,10 @@ namespace UnityGinRummy
 		{
 			int minDeadwoodPoints = Int32.MaxValue;
 			List<List<List<Card>>> maximalMeldSets = cardsToAllMaximalMeldSets(cards);
+
 			List<List<List<Card>>> bestMeldSets = new List<List<List<Card>>>();
 			foreach (List<List<Card>> melds in maximalMeldSets)
-			{
+			{	
 				int deadwoodPoints = getDeadwoodPoints(melds, cards);
 				if (deadwoodPoints <= minDeadwoodPoints)
 				{
@@ -341,15 +372,6 @@ namespace UnityGinRummy
 				}
 			}
 
-			if (bestMeldSets.Count != 0) 
-			{ 
-				string meldsStr = "";
-				List<List<Card>> bestmelds = bestMeldSets[0];
-				foreach (List<Card> meld in bestmelds)
-					foreach (Card c in meld)
-						meldsStr += c.Rank + " of " + c.Suit + ", ";
-				Debug.Log("best melds are " + meldsStr);
-			}
 			return bestMeldSets;
 		}
 
@@ -360,6 +382,11 @@ namespace UnityGinRummy
 		public static List<long> getAllMeldBitstrings()
 		{
 			return new List<long>(meldBitstringToCardsMap.Keys);
+		}
+
+		public static void Main(string[] arg)
+		{
+
 		}
 	}
 }
