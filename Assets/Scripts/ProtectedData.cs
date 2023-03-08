@@ -64,7 +64,7 @@ namespace UnityGinRummy
             if (player.PlayerId.Equals(player1ID))
             {
                 player1Cards.Add(card);
-                player1Cards.Sort();
+                //player1Cards.Sort();
             }
             else if (player.PlayerId.Equals(player2ID))
             {
@@ -82,7 +82,7 @@ namespace UnityGinRummy
             if (player.PlayerId.Equals(player1ID))
             {
                 player1Cards.Remove(card);
-                player1Cards.Sort();
+                //player1Cards.Sort();
             }
             else if (player.PlayerId.Equals(player2ID))
             {
@@ -92,6 +92,43 @@ namespace UnityGinRummy
             else
             {
                 faceUpCardPile.Remove(card);
+            }
+        }
+
+        public void SetCurrentMeldsToPlayer(Player player, List<List<byte>> melds)
+        {
+            if (player.PlayerId.Equals(player1ID)) 
+            {
+                player1Cards.Sort();
+                if (melds == null)
+                {
+                    Debug.Log("NO MELDS!");
+                    return;
+                }
+                    
+                List<byte> cards = new List<byte>();
+                foreach (List<byte> meld in melds)
+                    foreach (byte card in meld)
+                        cards.Add(card);
+
+                foreach (byte card in player1Cards)
+                    if (!cards.Contains(card))
+                        cards.Add(card);
+
+                player1Cards = cards;
+            }
+            else if (player.PlayerId.Equals(player2ID))
+            {
+                List<byte> cards = new List<byte>();
+                foreach (List<byte> meld in melds)
+                    foreach (byte card in meld)
+                        cards.Add(card);
+
+                foreach (byte card in player2Cards)
+                    if (!cards.Contains(card))
+                        cards.Add(card);
+
+                player2Cards = cards;
             }
         }
 

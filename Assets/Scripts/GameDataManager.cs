@@ -84,23 +84,20 @@ namespace UnityGinRummy
             protectedData.AddCardValuesToPlayer(pile, faceUpCards);
         }
 
-        public List<List<Card>> GetMelds(Player player)
+        public void SetCurrentMelds(Player player)
         {
             List<byte> cardBytes = protectedData.PlayerCards(player);
             List<Card> unmeldedCards = new List<Card>();
 
             foreach (byte b in cardBytes)
                 unmeldedCards.Add((Card)Card.allcards[b].Clone());
-            /*
-            foreach (Card c in cards)
-                Debug.Log(c.Rank + " " + c.Suit);
-            */
+           
             List<List<List<Card>>> bestMelds = GinRummyUtil.cardsToBestMeldSets(unmeldedCards);
 
             if (bestMelds.Count == 0)
             {
-                Debug.Log("Player " + player.PlayerId + " has " + GinRummyUtil.getDeadwoodPoints(unmeldedCards) + " deadwood.\n"); 
-                return null;
+                Debug.Log("Player " + player.PlayerId + " has " + GinRummyUtil.getDeadwoodPoints(unmeldedCards) + " deadwood.\n");
+                protectedData.SetCurrentMeldsToPlayer(player, null);
             }
             else
             {
@@ -115,10 +112,18 @@ namespace UnityGinRummy
                             }
                         }
 
-                //bestMelds.Add(cards);
                 Debug.Log("Melds: Player " + player.PlayerId + " has " + GinRummyUtil.getDeadwoodPoints(unmeldedCards) + " deadwood.\n");
 
-                return melds;
+                List<List<byte>> meldValsList = new List<List<byte>>();
+                foreach (List<Card> meld in melds) { 
+                    List<byte> meldVals = new List<byte>();
+                    foreach (Card card in meld)
+                    {
+                        meldVals.Add(card.GetCardId());
+                    }
+                    meldValsList.Add(meldVals);
+                }
+                protectedData.SetCurrentMeldsToPlayer(player, meldValsList);
             }
         }
 

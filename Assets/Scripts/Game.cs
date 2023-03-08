@@ -221,16 +221,16 @@ namespace UnityGinRummy
             }
         }
 
-        public void ShowCurrentMelds(Player player)
+        public void SetCurrentMelds(Player player)
         {
-            gameDataManager.GetMelds(player);
+            gameDataManager.SetCurrentMelds(player);
         }
 
         public void CheckForMelds()
         {
             List<byte> playersCards = gameDataManager.PlayerCards(player1);
             player1.SetCardValues(playersCards);
-            ShowCurrentMelds(player1);
+            SetCurrentMelds(player1);
         }
 
         public void SetFaceUpPile()

@@ -123,8 +123,8 @@ namespace UnityGinRummy
 
         public void DrawDisplayCard(Player player, Card card)
         {
-            if (card == null) 
-            { 
+            if (card == null)
+            {
                 card = DisplayingCards[DisplayingCards.Count - 1];
                 player.ReceiveDisplayCard(card);
                 AddCardAnimation(card, player.NextCardPosition());
@@ -132,9 +132,8 @@ namespace UnityGinRummy
             }
             else
             {
-
+                Debug.LogError("There's an issue in DrawDisplayCard");
             }
-
         }
         public void DrawDisplayingCardsFromFaceUpPile(Player player, Player faceUpPile, byte ID)
         {
