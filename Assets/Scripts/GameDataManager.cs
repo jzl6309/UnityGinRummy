@@ -84,8 +84,10 @@ namespace UnityGinRummy
             protectedData.AddCardValuesToPlayer(pile, faceUpCards);
         }
 
-        public void SetCurrentMelds(Player player)
+        public int SetCurrentMelds(Player player)
         {
+            int deadwood = 0;
+
             List<byte> cardBytes = protectedData.PlayerCards(player);
             List<Card> unmeldedCards = new List<Card>();
 
@@ -96,7 +98,7 @@ namespace UnityGinRummy
 
             if (bestMelds.Count == 0)
             {
-                Debug.Log("Player " + player.PlayerId + " has " + GinRummyUtil.getDeadwoodPoints(unmeldedCards) + " deadwood.\n");
+                deadwood = GinRummyUtil.getDeadwoodPoints(unmeldedCards);
                 protectedData.SetCurrentMeldsToPlayer(player, null);
             }
             else
@@ -112,7 +114,7 @@ namespace UnityGinRummy
                             }
                         }
 
-                Debug.Log("Melds: Player " + player.PlayerId + " has " + GinRummyUtil.getDeadwoodPoints(unmeldedCards) + " deadwood.\n");
+                deadwood = GinRummyUtil.getDeadwoodPoints(unmeldedCards);
 
                 List<List<byte>> meldValsList = new List<List<byte>>();
                 foreach (List<Card> meld in melds) { 
@@ -125,6 +127,7 @@ namespace UnityGinRummy
                 }
                 protectedData.SetCurrentMeldsToPlayer(player, meldValsList);
             }
+            return deadwood;
         }
 
         public byte DrawCard()
@@ -166,6 +169,55 @@ namespace UnityGinRummy
         public List<byte> PlayerCards(Player player)
         {
             return protectedData.PlayerCards(player);
+        }
+
+        public byte GetDiscard(Player player, byte drawnFaceUpCard)
+        {
+            int minDeadwood = Int32.MaxValue;
+            List<Card> candidateCards = new List<Card>();
+
+            List<byte> cardVals = protectedData.PlayerCards(player);
+            List<Card> cards = new List<Card>();
+
+            foreach (byte card in cardVals)
+                cards.Add((Card)Card.allcards[card].Clone());
+
+            foreach (Card card in cards)
+            {
+                if (card.GetCardId() == drawnFaceUpCard)
+                    continue;
+
+                List<Card> remainingCards = new List<Card>();
+                foreach (Card c in cards)
+                {
+                    if (card.GetCardId() != c.GetCardId())
+                        remainingCards.Add((Card)c.Clone());
+                }
+
+                int deadwood = 0;
+                List<List<List<Card>>> bestMeldSets = GinRummyUtil.cardsToBestMeldSets(remainingCards);
+                if (bestMeldSets.Count == 0)
+                {
+                    deadwood = GinRummyUtil.getDeadwoodPoints(remainingCards);
+                }
+                else
+                {
+                    deadwood = GinRummyUtil.getDeadwoodPoints(bestMeldSets[0], remainingCards);
+                }
+
+                if (deadwood <= minDeadwood)
+                {
+                    if (deadwood < minDeadwood)
+                    {
+                        minDeadwood = deadwood;
+                        candidateCards.Clear();
+                    }
+                    candidateCards.Add(card);
+                }
+            }
+            Card discard = candidateCards[UnityEngine.Random.Range(0, candidateCards.Count)];
+
+            return discard.GetCardId();
         }
     }
 }

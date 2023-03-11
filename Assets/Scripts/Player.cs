@@ -19,7 +19,7 @@ namespace UnityGinRummy
         public List<Card> DisplayingCards = new List<Card>();
 
         public void ReceiveDisplayCard(Card card)
-        {   
+        {
             card.OwnerId = PlayerId;
             DisplayingCards.Add(card);
             NumberOfDisplayedCards++;
@@ -107,8 +107,23 @@ namespace UnityGinRummy
             }
         }
 
-        public Boolean willDrawFaceUpCard(Card card)
+        public Boolean willDrawFaceUpCard(Player faceUpPile)
         {
+            List<Card> cards = new List<Card>();
+            foreach (Card c in DisplayingCards)
+                cards.Add((Card) c.Clone());
+
+            Debug.Log("face up pile cnt " + faceUpPile.DisplayingCards.Count);
+
+            Card card = faceUpPile.DisplayingCards[faceUpPile.DisplayingCards.Count - 1];
+
+            cards.Add((Card) card.Clone());
+
+            foreach (List<Card> meld in GinRummyUtil.cardsToAllMelds(cards))
+                foreach (Card c in meld)
+                    if (card.GetCardId() == c.GetCardId())
+                        return true;
+
             return false;
         }
     }

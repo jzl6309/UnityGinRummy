@@ -156,7 +156,7 @@ namespace UnityGinRummy
         {
             foreach (Card card in player.DisplayingCards)
             {
-                if (card.Rank == Card.GetRank(ID) && card.Suit == Card.GetSuit(ID))
+                if (card.Rank == Card.GetRank(ID) && card.Suit == Card.GetSuit(ID) || card.Rank == Ranks.NoRanks)
                 {
                     Card c = card;
                     c.SetCardValue(ID);

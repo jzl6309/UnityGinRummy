@@ -13,6 +13,7 @@ namespace UnityGinRummy
         public GameDataManager gameDataManager;
         public Text MessageText;
         public Text ButtonText;
+        public Text DeadWoodText;
 
         CardAnimator cardAnimator;
 
@@ -22,6 +23,7 @@ namespace UnityGinRummy
         Player currentTurnPlayer;
 
         Card selectedCard;
+        byte drawnFaceUpCard = 255;
 
         public List<Transform> PlayerPositions = new List<Transform>();
 
@@ -33,8 +35,7 @@ namespace UnityGinRummy
             FirstTurnPass,
             SelectDraw,
             SelectDiscard,
-            OppSelectDraw,
-            OppSelectDiscard,
+            Knock,
             GameFinished
         };
 
@@ -46,6 +47,7 @@ namespace UnityGinRummy
             player1.PlayerId = "Player 1";
             player1.PlayerName = "Player 1";
             player1.Position = PlayerPositions[0].position;
+            player1.isBot = false;
 
             player2 = new Player();
             player2.PlayerId = "Player 2";
@@ -135,6 +137,20 @@ namespace UnityGinRummy
 
             gameState = GameState.FirstTurn;
         }
+
+        IEnumerator WaitForFunction()
+        {
+            yield return new WaitForSeconds(3);
+            GameFlow();
+        }
+
+        IEnumerator WaitForDrawFunction()
+        {
+            yield return new WaitForSeconds(3);
+            gameState = GameState.SelectDiscard;
+            GameFlow();
+        }
+
         void OnFirstTurn()
         {
             SwitchTurns();
@@ -146,7 +162,21 @@ namespace UnityGinRummy
             else if (currentTurnPlayer == player2)
             {
                 MessageText.text = "Oppenent's Turn";
-                GameFlow();
+            }
+            if (currentTurnPlayer.isBot)
+            {
+                if (currentTurnPlayer.willDrawFaceUpCard(faceUpPile))
+                {
+                    ReceiveCardFromFaceUpPile(currentTurnPlayer);
+                    SwitchTurns();
+                    gameState = GameState.SelectDiscard;
+                }
+                else
+                {
+                    SwitchTurns();
+                    gameState = GameState.SelectDraw;
+                }
+                StartCoroutine(WaitForFunction());
             }
         }
 
@@ -159,15 +189,30 @@ namespace UnityGinRummy
             }
             else if (currentTurnPlayer == player2)
             {
-                MessageText.text = "Oppenent's Turn";
-                gameState = GameState.SelectDraw;
-                SwitchTurns();
-                GameFlow();
+                MessageText.text = "Opponent's Turn";
+            }
+            if (currentTurnPlayer.isBot)
+            {
+                if (currentTurnPlayer.willDrawFaceUpCard(faceUpPile))
+                {
+                    ReceiveCardFromFaceUpPile(currentTurnPlayer);
+                    SwitchTurns();
+                    gameState = GameState.SelectDiscard;
+                    MessageText.text = "Opp Takes Card";
+                }
+                else
+                {
+                    SwitchTurns();
+                    gameState = GameState.SelectDraw;
+                    MessageText.text = "Opp Passes";
+                }
+                StartCoroutine(WaitForFunction());
             }
         }
 
         void OnSelectDraw()
         {
+            Debug.Log(currentTurnPlayer.PlayerId + " is ready to draw");
             if (currentTurnPlayer == player1)
             {
                 MessageText.text = "Draw a card";
@@ -175,12 +220,30 @@ namespace UnityGinRummy
             }
             else if (currentTurnPlayer == player2)
             {
-                SwitchTurns();
+                MessageText.text = "Opponent's Turn";
+                ButtonText.text = "";
+            }
+            if (currentTurnPlayer.isBot)
+            {
+                if (currentTurnPlayer.willDrawFaceUpCard(faceUpPile))
+                {
+                    ReceiveCardFromFaceUpPile(currentTurnPlayer);
+                    gameState = GameState.Waiting;
+                }
+                else
+                {
+                    DrawCard();
+                    gameState = GameState.Waiting;
+                }
+                Debug.Log("waiting after draw");
+
+                StartCoroutine(WaitForDrawFunction());
             }
         }
 
         void OnSelectDiscard()
         {
+            Debug.Log(currentTurnPlayer.PlayerId + " is ready to discard");
             if (currentTurnPlayer == player1)
             {
                 MessageText.text = "Discard";
@@ -188,7 +251,14 @@ namespace UnityGinRummy
             }
             else if (currentTurnPlayer == player2)
             {
+                MessageText.text = "Opponent's Turn";
+                ButtonText.text = "";
+            }
+            if (currentTurnPlayer.isBot)
+            {
+                Discard(currentTurnPlayer);
                 SwitchTurns();
+                gameState = GameState.SelectDraw;
             }
         }
 
@@ -206,10 +276,13 @@ namespace UnityGinRummy
         {
             if (currentTurnPlayer == null)
             {
+                /*
                 var rand = new System.Random();
                 int n = rand.Next(2);
                 if (n == 0) currentTurnPlayer = player1;
                 else currentTurnPlayer = player2;
+                */
+                currentTurnPlayer = player1;
             }
             else if (currentTurnPlayer == player1)
             {
@@ -223,7 +296,8 @@ namespace UnityGinRummy
 
         public void SetCurrentMelds(Player player)
         {
-            gameDataManager.SetCurrentMelds(player);
+            int deadwood = gameDataManager.SetCurrentMelds(player);
+            DeadWoodText.text = deadwood.ToString();
         }
 
         public void CheckForMelds()
@@ -249,8 +323,9 @@ namespace UnityGinRummy
         public void ReceiveCardFromFaceUpPile(Player player)
         {
             byte card = gameDataManager.DrawFaceUpCard();
+            drawnFaceUpCard = card;
 
-            Debug.Log("face up card is " + Card.GetRank(card) + " " + Card.GetSuit(card));
+            //Debug.Log("face up card is " + Card.GetRank(card) + " " + Card.GetSuit(card));
 
             cardAnimator.DrawDisplayingCardsFromFaceUpPile(player, faceUpPile, card);
 
@@ -277,7 +352,16 @@ namespace UnityGinRummy
 
         public void Discard(Player player)
         {
-            byte card = selectedCard.GetCardId((int)selectedCard.Rank,(int)selectedCard.Suit);
+            byte card;
+            if (currentTurnPlayer.isBot)
+            {
+                card = gameDataManager.GetDiscard(currentTurnPlayer, drawnFaceUpCard);
+                Debug.Log(currentTurnPlayer.PlayerId + " is discarding " + card);
+            }
+            else
+            {
+                card = selectedCard.GetCardId((int)selectedCard.Rank, (int)selectedCard.Suit);
+            }
 
             gameDataManager.RemoveCardFromPlayer(player, card);
             gameDataManager.AddCardToPlayer(faceUpPile, card);
@@ -286,6 +370,8 @@ namespace UnityGinRummy
             player.ResetDisplayCards(cardAnimator);
 
             selectedCard = null;
+            drawnFaceUpCard = 255;
+            Debug.Log(currentTurnPlayer.PlayerId + " successfully discarded");
         }
 
         public void OnCardSelected(Card card)
@@ -366,6 +452,24 @@ namespace UnityGinRummy
                     GameFlow();
                 }
             }
+            else if (gameState == GameState.FirstTurnPass && currentTurnPlayer == player1)
+            {
+                if (selectedCard != null)
+                {
+                    MessageText.text = "Takes the card";
+                    selectedCard = null;
+                    ReceiveCardFromFaceUpPile(currentTurnPlayer);
+                    gameState = GameState.SelectDiscard;
+                    GameFlow();
+                }
+                else
+                {
+                    MessageText.text = "Pass";
+                    gameState = GameState.SelectDraw;
+                    SwitchTurns();
+                    GameFlow();
+                }
+            }
             else if (gameState == GameState.SelectDraw && currentTurnPlayer == player1)
             {
                 DrawCard();
@@ -377,6 +481,7 @@ namespace UnityGinRummy
                 if (selectedCard != null)
                 {
                     Discard(currentTurnPlayer);
+                    SwitchTurns();
                     gameState = GameState.SelectDraw;
                     GameFlow();
                 }
