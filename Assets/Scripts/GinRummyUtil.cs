@@ -45,6 +45,10 @@ namespace UnityGinRummy
 		*/
 		public const int GOAL_SCORE = 100;
 		/**
+		 * Bonus for melding all cards before discard and knocking
+		 */
+		public const int BIG_GIN_BONUS = 50;
+		/**
 		 * Bonus for melding all cards before knocking
 		 */
 		public const int GIN_BONUS = 25;

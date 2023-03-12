@@ -54,7 +54,7 @@ namespace UnityGinRummy
         public Queue<CardAnimation> cardAnimations;
 
         CardAnimation currentCardAnimation;
-        Vector2 startPosition = new Vector2(-6f, 0.5f);
+        Vector2 startPosition = new Vector2(-7f, 0.5f);
 
         public UnityEvent OnAllAnimationsFinished = new UnityEvent();
 
@@ -67,7 +67,7 @@ namespace UnityGinRummy
             InitializeDeck();
         }
 
-        void InitializeDeck()
+        public void InitializeDeck()
         {
             DisplayingCards = new List<Card>();
             for (byte i = 0; i < 52; i++)
@@ -176,6 +176,27 @@ namespace UnityGinRummy
             CardAnimation cardAnimation = new CardAnimation(card, pos);
             cardAnimations.Enqueue(cardAnimation);
             working = true;
+        }
+
+        public void ClearAllCards(Player player)
+        {
+            List<Card> cards = player.GetDisplayCards();
+
+            foreach (Card card in cards)
+            {
+                Card c = card;
+                Vector2 newPosition = startPosition + Vector2.right * Constants.DECK_CARD_POSITION_OFFSET * DisplayingCards.Count;
+                AddCardAnimation(c, newPosition);
+                DisplayingCards.Add(c);
+                player.Remove(card);
+            }
+
+            Debug.Log("Finished clearing cards");
+            if (player.PlayerId == "Face Up Pile")
+            {
+                FaceUpDisplay.Clear();
+            }
+
         }
 
         private void Update()

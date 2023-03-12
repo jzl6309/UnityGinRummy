@@ -12,7 +12,6 @@ namespace UnityGinRummy
         public string PlayerName;
         public bool isBot;
         public Vector2 Position;
-        public Vector2 MeldPosition;
 
         int NumberOfDisplayedCards;
 
