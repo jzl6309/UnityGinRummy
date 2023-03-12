@@ -54,7 +54,7 @@ namespace UnityGinRummy
         public Queue<CardAnimation> cardAnimations;
 
         CardAnimation currentCardAnimation;
-        Vector2 startPosition = new Vector2(-3f, 0.5f);
+        Vector2 startPosition = new Vector2(-6f, 0.5f);
 
         public UnityEvent OnAllAnimationsFinished = new UnityEvent();
 

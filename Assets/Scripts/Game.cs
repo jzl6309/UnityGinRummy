@@ -21,9 +21,13 @@ namespace UnityGinRummy
         Player player2;
         Player faceUpPile;
         Player currentTurnPlayer;
+        Player playerKnocked;
+        int player1Points = 0;
+        int player2Points = 0;
 
         Card selectedCard;
         byte drawnFaceUpCard = 255;
+        bool playerCanKnock = false;
 
         public List<Transform> PlayerPositions = new List<Transform>();
 
@@ -36,6 +40,7 @@ namespace UnityGinRummy
             SelectDraw,
             SelectDiscard,
             Knock,
+            HandFinished,
             GameFinished
         };
 
@@ -77,7 +82,8 @@ namespace UnityGinRummy
             {
                 SetFaceUpPile();
                 CheckForMelds();
-                ShowAndHideCards();
+                if (gameState != GameState.HandFinished && gameState != GameState.GameFinished)
+                    ShowAndHideCards();
             }
 
             switch (gameState)
@@ -117,6 +123,18 @@ namespace UnityGinRummy
                         OnSelectDiscard();
                         break;
                     }
+                case GameState.Knock:
+                    {
+                        Debug.Log("Player Knock");
+                        OnKnock();
+                        break;
+                    }
+                case GameState.HandFinished:
+                    {
+                        Debug.Log("Hand Finished");
+                        OnHandFinished();
+                        break;
+                    }
                 case GameState.GameFinished:
                     {
                         Debug.Log("The Game is finished");
@@ -140,13 +158,13 @@ namespace UnityGinRummy
 
         IEnumerator WaitForFunction()
         {
-            yield return new WaitForSeconds(3);
+            yield return new WaitForSeconds(2);
             GameFlow();
         }
 
         IEnumerator WaitForDrawFunction()
         {
-            yield return new WaitForSeconds(3);
+            yield return new WaitForSeconds(2);
             gameState = GameState.SelectDiscard;
             GameFlow();
         }
@@ -243,11 +261,17 @@ namespace UnityGinRummy
 
         void OnSelectDiscard()
         {
-            Debug.Log(currentTurnPlayer.PlayerId + " is ready to discard");
+            playerCanKnock = gameDataManager.CheckKnock(currentTurnPlayer);
+
             if (currentTurnPlayer == player1)
             {
                 MessageText.text = "Discard";
-                ButtonText.text = "";
+                if (playerCanKnock)
+                    ButtonText.text = "Knock";
+                else
+                {
+                    ButtonText.text = "";
+                }
             }
             else if (currentTurnPlayer == player2)
             {
@@ -256,15 +280,112 @@ namespace UnityGinRummy
             }
             if (currentTurnPlayer.isBot)
             {
-                Discard(currentTurnPlayer);
-                SwitchTurns();
-                gameState = GameState.SelectDraw;
+                if (playerCanKnock)
+                {
+                    playerKnocked = currentTurnPlayer;
+                    gameState = GameState.Knock;
+                    GameFlow();
+                }
+                else
+                {
+                    Discard(currentTurnPlayer);
+                    SwitchTurns();
+                    gameState = GameState.SelectDraw;
+                }
             }
+        }
+
+        void OnKnock()
+        {
+            bool gin = GetFinalDiscard(currentTurnPlayer);
+
+            CheckOppMelds();
+            ShowAllCards();
+
+            List<int> finalPoints = gameDataManager.GetFinalPoints(player1, player2);
+
+            int points1 = finalPoints[0];
+            int points2 = finalPoints[1];
+
+            Debug.Log("Player 1 points deadwood " + points1);
+            Debug.Log("Player 2 points deadwood " + points2);
+
+            if (playerKnocked == player1)
+            {
+                if (points1 == 0 && gin)
+                {
+                    player1Points += points2 + 2 * GinRummyUtil.GIN_BONUS;
+                }
+                else if (points1 == 0)
+                {
+                    player1Points += points2 + GinRummyUtil.GIN_BONUS;
+                }
+                else if (points1 < points2)
+                {
+                    player1Points += points2 - points1;
+                }
+                else
+                {
+                    player2Points += GinRummyUtil.UNDERCUT_BONUS + points1;
+                }
+            }
+            else
+            {
+                if (points2 == 0 && gin)
+                {
+                    player2Points += points1 + 2 * GinRummyUtil.GIN_BONUS;
+                }
+                else if (points2 == 0)
+                {
+                    player2Points += points1 + GinRummyUtil.GIN_BONUS;
+                }
+                else if (points2 < points1)
+                {
+                    player2Points += points1 - points2;
+                }
+                else
+                {
+                    player1Points += GinRummyUtil.UNDERCUT_BONUS + points2;
+                }
+            }
+
+            Debug.Log(player1.PlayerId + " has " + player1Points + " points");
+            Debug.Log(player2.PlayerId + " has " + player2Points + " points");
+
+            gameState = GameState.HandFinished;
+            GameFlow();
+        }
+
+        void OnHandFinished()
+        {
+
         }
 
         public void OnGameFinished()
         {
 
+        }
+
+        public bool GetFinalDiscard(Player player)
+        {
+            byte cardVal = gameDataManager.GetFinalDiscard(player);
+
+            if (cardVal == Constants.NO_MORE_CARDS)
+            {
+                return true;
+            }
+            else
+            {
+                gameDataManager.RemoveCardFromPlayer(player, cardVal);
+                gameDataManager.AddCardToPlayer(faceUpPile, cardVal);
+
+                cardAnimator.DiscardDisplayCardsToFaceUpPile(player, faceUpPile, cardVal);
+                player.ResetDisplayCards(cardAnimator);
+
+                selectedCard = null;
+                drawnFaceUpCard = 255;
+                return false;
+            }
         }
 
         public void AllAnimationsFinished()
@@ -297,7 +418,10 @@ namespace UnityGinRummy
         public void SetCurrentMelds(Player player)
         {
             int deadwood = gameDataManager.SetCurrentMelds(player);
-            DeadWoodText.text = deadwood.ToString();
+            if (currentTurnPlayer == player1)
+            {
+                DeadWoodText.text = deadwood.ToString();
+            }
         }
 
         public void CheckForMelds()
@@ -305,6 +429,19 @@ namespace UnityGinRummy
             List<byte> playersCards = gameDataManager.PlayerCards(player1);
             player1.SetCardValues(playersCards);
             SetCurrentMelds(player1);
+        }
+
+        public void CheckOppMelds()
+        {
+            List<byte> playersCards = gameDataManager.PlayerCards(player2);
+            player2.SetCardValues(playersCards);
+            SetCurrentMelds(player2);
+        }
+
+        public void ShowAllCards()
+        {
+            player1.ShowCards();
+            player2.ShowCards();
         }
 
         public void SetFaceUpPile()
@@ -356,7 +493,11 @@ namespace UnityGinRummy
             if (currentTurnPlayer.isBot)
             {
                 card = gameDataManager.GetDiscard(currentTurnPlayer, drawnFaceUpCard);
-                Debug.Log(currentTurnPlayer.PlayerId + " is discarding " + card);
+                if (card == Constants.NO_MORE_CARDS)
+                {
+                    gameState = GameState.Knock;
+                    GameFlow();
+                }
             }
             else
             {
@@ -371,7 +512,6 @@ namespace UnityGinRummy
 
             selectedCard = null;
             drawnFaceUpCard = 255;
-            Debug.Log(currentTurnPlayer.PlayerId + " successfully discarded");
         }
 
         public void OnCardSelected(Card card)
@@ -481,8 +621,15 @@ namespace UnityGinRummy
                 if (selectedCard != null)
                 {
                     Discard(currentTurnPlayer);
+                    CheckForMelds();
                     SwitchTurns();
                     gameState = GameState.SelectDraw;
+                    GameFlow();
+                }
+                else if(playerCanKnock)
+                {
+                    playerKnocked = currentTurnPlayer;
+                    gameState = GameState.Knock;
                     GameFlow();
                 }
             }

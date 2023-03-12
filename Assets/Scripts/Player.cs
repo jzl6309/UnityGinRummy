@@ -33,7 +33,7 @@ namespace UnityGinRummy
 
         public Vector2 NextDiscardPosition()
         {
-            Vector2 nextPos = Position + Vector2.right * Constants.DECK_CARD_POSITION_OFFSET * NumberOfDisplayedCards;
+            Vector2 nextPos = Position + Vector2.right * Constants.DISCARD_PILE_POSITION_OFFSET * NumberOfDisplayedCards;
             return nextPos;
         }
 
@@ -112,8 +112,6 @@ namespace UnityGinRummy
             List<Card> cards = new List<Card>();
             foreach (Card c in DisplayingCards)
                 cards.Add((Card) c.Clone());
-
-            Debug.Log("face up pile cnt " + faceUpPile.DisplayingCards.Count);
 
             Card card = faceUpPile.DisplayingCards[faceUpPile.DisplayingCards.Count - 1];
 

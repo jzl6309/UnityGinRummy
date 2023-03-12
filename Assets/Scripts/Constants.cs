@@ -11,6 +11,7 @@ namespace UnityGinRummy
         public const float CARD_ROTATION_SPEED = 8f;
         public const float CARD_SNAP_DISTANCE = 0.01f;
         public const float DECK_CARD_POSITION_OFFSET = 0.005f;
+        public const float DISCARD_PILE_POSITION_OFFSET = 0.2f;
         public const float PLAYER_CARD_POSITION_OFFSET = 1.0f;
         public const float SELECTED_CARD_OFFSET = 0.5F;
         public const byte NO_MORE_CARDS = 255;

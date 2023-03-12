@@ -119,6 +119,13 @@ namespace UnityGinRummy
             }
             else if (player.PlayerId.Equals(player2ID))
             {
+                player2Cards.Sort();
+                if (melds == null)
+                {
+                    Debug.Log("NO MELDS!");
+                    return;
+                }
+
                 List<byte> cards = new List<byte>();
                 foreach (List<byte> meld in melds)
                     foreach (byte card in meld)

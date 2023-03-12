@@ -147,6 +147,93 @@ namespace UnityGinRummy
             return Constants.NO_MORE_CARDS; 
         }
 
+        public bool CheckKnock(Player player)
+        {
+            int deadwood = Int32.MaxValue;
+
+            List<byte> cardBytes = protectedData.PlayerCards(player);
+            List<Card> unmeldedCards = new List<Card>();
+
+            foreach (byte b in cardBytes)
+                unmeldedCards.Add((Card)Card.allcards[b].Clone());
+
+            // Check if deadwood of maximal meld is low enough to go out. 
+            List<List<List<Card>>> bestMeldSets = GinRummyUtil.cardsToBestMeldSets(unmeldedCards);
+
+            if (bestMeldSets.Count == 0)
+            {
+                deadwood = GinRummyUtil.getDeadwoodPoints(unmeldedCards);
+                return false;
+            }
+            else
+            {
+                List<List<Card>> melds = bestMeldSets[0];
+                foreach (List<Card> meld in melds)
+                    foreach (Card card in meld)
+                        for (int i = 0; i < unmeldedCards.Count; i++)
+                        {
+                            if (card.GetCardId() == unmeldedCards[i].GetCardId())
+                            {
+                                unmeldedCards.RemoveAt(i);
+                            }
+                        }
+
+                byte max = Byte.MinValue;
+                foreach (Card card in unmeldedCards)
+                    if (card.GetCardId() > max)
+                        max = card.GetCardId();
+
+                for (int i = 0; i < unmeldedCards.Count; i++)
+                {
+                    if (unmeldedCards[i].GetCardId() == max) { 
+                        unmeldedCards.RemoveAt(i);
+                        break;
+                    }
+                }
+
+                deadwood = GinRummyUtil.getDeadwoodPoints(unmeldedCards);
+                Debug.Log("Deadwood in checkDeadwood is " + deadwood);
+                Debug.Log("The unmelded card count in checkDeadwood is " + unmeldedCards.Count);
+                return deadwood <= GinRummyUtil.MAX_DEADWOOD;
+            }
+        }
+
+        public byte GetFinalDiscard(Player player)
+        {
+            List<byte> cardBytes = protectedData.PlayerCards(player);
+            List<Card> unmeldedCards = new List<Card>();
+
+            foreach (byte b in cardBytes)
+                unmeldedCards.Add((Card)Card.allcards[b].Clone());
+
+            // Check if deadwood of maximal meld is low enough to go out. 
+            List<List<List<Card>>> bestMeldSets = GinRummyUtil.cardsToBestMeldSets(unmeldedCards);
+
+            List<List<Card>> melds = bestMeldSets[0];
+            foreach (List<Card> meld in melds)
+                foreach (Card card in meld)
+                    for (int i = 0; i < unmeldedCards.Count; i++)
+                    {
+                        if (card.GetCardId() == unmeldedCards[i].GetCardId())
+                        {
+                            unmeldedCards.RemoveAt(i);
+                        }
+                    }
+
+            byte max = Byte.MinValue;
+            foreach (Card card in unmeldedCards)
+                if (card.GetCardId() > max)
+                    max = card.GetCardId();
+
+            foreach (Card card in unmeldedCards)
+                if (card.GetCardId() == max)
+                {
+                    return card.GetCardId();
+                }
+
+            return Constants.NO_MORE_CARDS;
+        }
+
         public void RemoveCardFromPlayer(Player player, byte card)
         {
             protectedData.RemoveCardFromPlayer(player, card);
@@ -215,9 +302,56 @@ namespace UnityGinRummy
                     candidateCards.Add(card);
                 }
             }
+
+            if (candidateCards.Count == 0)
+                return Constants.NO_MORE_CARDS;
+
             Card discard = candidateCards[UnityEngine.Random.Range(0, candidateCards.Count)];
 
             return discard.GetCardId();
+        }
+
+        public List<int> GetFinalPoints(Player player1, Player player2)
+        {
+            List<int> finalPoints = new List<int>();
+            List<Player> players = new List<Player>();
+            players.Add(player1);
+            players.Add(player2);
+
+            foreach (Player player in players)
+            {
+                int deadwood = 0;
+
+                List<byte> cardBytes = protectedData.PlayerCards(player);
+                List<Card> unmeldedCards = new List<Card>();
+
+                foreach (byte b in cardBytes)
+                    unmeldedCards.Add((Card)Card.allcards[b].Clone());
+
+                List<List<List<Card>>> bestMelds = GinRummyUtil.cardsToBestMeldSets(unmeldedCards);
+
+                if (bestMelds.Count == 0)
+                {
+                    deadwood = GinRummyUtil.getDeadwoodPoints(unmeldedCards);
+                }
+                else
+                {
+                    List<List<Card>> melds = bestMelds[0];
+                    foreach (List<Card> meld in melds)
+                        foreach (Card card in meld)
+                            for (int i = 0; i < unmeldedCards.Count; i++)
+                            {
+                                if (card.GetCardId() == unmeldedCards[i].GetCardId())
+                                {
+                                    unmeldedCards.RemoveAt(i);
+                                }
+                            }
+
+                    deadwood = GinRummyUtil.getDeadwoodPoints(unmeldedCards);
+                }
+                finalPoints.Add(deadwood);
+            }
+            return finalPoints;
         }
     }
 }
