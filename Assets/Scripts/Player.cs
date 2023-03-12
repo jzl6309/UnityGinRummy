@@ -86,6 +86,12 @@ namespace UnityGinRummy
             NumberOfDisplayedCards--;
         }
 
+        public void ClearAllCards()
+        {
+            DisplayingCards.Clear();
+            NumberOfDisplayedCards = 0;
+        }
+
         public List<Card> GetDisplayCards()
         {
             List<Card> cards = new List<Card>();

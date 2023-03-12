@@ -81,7 +81,7 @@ namespace UnityGinRummy
 
         public void GameFlow()
         {
-            if (gameState > GameState.GameStarted)
+            if (gameState > GameState.GameStarted && gameState < GameState.GameFinished)
             {
                 SetFaceUpPile();
                 CheckForMelds();
@@ -359,8 +359,6 @@ namespace UnityGinRummy
                 }
             }
 
-
-
             Debug.Log(player1.PlayerId + " has " + player1Points + " points");
             Debug.Log(player2.PlayerId + " has " + player2Points + " points");
 
@@ -374,15 +372,16 @@ namespace UnityGinRummy
         {
             if (player1Points < GinRummyUtil.GOAL_SCORE && player2Points < GinRummyUtil.GOAL_SCORE)
             {
+                HideAllCards();
+
                 Debug.Log("I am clearing player 1 cards");
                 cardAnimator.ClearAllCards(player1);
                 Debug.Log("I am clearing player 2 cards");
                 cardAnimator.ClearAllCards(player2);
                 Debug.Log("I am clearing faceUpPile cards");
                 cardAnimator.ClearAllCards(faceUpPile);
-               
-                // cardAnimator.DealDisplayCards(player1, player2, faceUpPile);
-                
+
+                Debug.Log("I finished");
                 gameState = GameState.GameStarted;
             }
         }
@@ -527,6 +526,13 @@ namespace UnityGinRummy
         {
             player1.ShowCards();
             player2.ShowCards();
+        }
+
+        public void HideAllCards()
+        {
+            player1.HideCards();
+            player2.HideCards();
+            faceUpPile.HideCards();
         }
 
         public void SetFaceUpPile()

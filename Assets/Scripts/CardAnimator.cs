@@ -173,6 +173,7 @@ namespace UnityGinRummy
 
         public void AddCardAnimation(Card card, Vector2 pos)
         {
+            Debug.Log("moving " + card.GetCardId() + " to new pos " + pos);
             CardAnimation cardAnimation = new CardAnimation(card, pos);
             cardAnimations.Enqueue(cardAnimation);
             working = true;
@@ -180,16 +181,16 @@ namespace UnityGinRummy
 
         public void ClearAllCards(Player player)
         {
-            List<Card> cards = player.GetDisplayCards();
-
-            foreach (Card card in cards)
+            for (int i = 0; i < player.DisplayingCards.Count; i++)
             {
-                Card c = card;
+                Debug.Log("I'm moving " + player.PlayerId + "'s card " + i);
+                Card c = player.DisplayingCards[i];
                 Vector2 newPosition = startPosition + Vector2.right * Constants.DECK_CARD_POSITION_OFFSET * DisplayingCards.Count;
                 AddCardAnimation(c, newPosition);
                 DisplayingCards.Add(c);
-                player.Remove(card);
             }
+
+            player.ClearAllCards();
 
             Debug.Log("Finished clearing cards");
             if (player.PlayerId == "Face Up Pile")
