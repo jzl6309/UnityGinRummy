@@ -206,7 +206,6 @@ namespace UnityGinRummy
             foreach (byte b in cardBytes)
                 unmeldedCards.Add((Card)Card.allcards[b].Clone());
 
-            // Check if deadwood of maximal meld is low enough to go out. 
             List<List<List<Card>>> bestMeldSets = GinRummyUtil.cardsToBestMeldSets(unmeldedCards);
 
             List<List<Card>> melds = bestMeldSets[0];

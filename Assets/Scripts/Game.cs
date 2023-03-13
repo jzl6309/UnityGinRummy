@@ -172,6 +172,13 @@ namespace UnityGinRummy
             GameFlow();
         }
 
+        IEnumerator WaitForHandFinishedFunction()
+        {
+            yield return new WaitForSeconds(3);
+            gameState = GameState.HandFinished;
+            GameFlow();
+        }
+
         void OnFirstTurn()
         {
             SwitchTurns();
@@ -195,7 +202,7 @@ namespace UnityGinRummy
                 else
                 {
                     SwitchTurns();
-                    gameState = GameState.SelectDraw;
+                    gameState = GameState.FirstTurnPass;
                 }
                 StartCoroutine(WaitForFunction());
             }
@@ -300,6 +307,7 @@ namespace UnityGinRummy
 
         void OnKnock()
         {
+            gameState = GameState.Waiting;
             bool gin = GetFinalDiscard(currentTurnPlayer);
 
             CheckOppMelds();
@@ -311,15 +319,15 @@ namespace UnityGinRummy
             int points2 = finalPoints[1];
             int bonus = 0;
 
-            Debug.Log("Player 1 points deadwood " + points1);
-            Debug.Log("Player 2 points deadwood " + points2);
+            Debug.Log("Player 1 deadwood points " + points1);
+            Debug.Log("Player 2 deadwood points " + points2);
 
             if (playerKnocked == player1)
             {
                 if (points1 == 0 && gin)
                 {
-                    player1Points += points2 + 2 * GinRummyUtil.GIN_BONUS;
-                    bonus = 2 * GinRummyUtil.GIN_BONUS;
+                    player1Points += points2 + GinRummyUtil.BIG_GIN_BONUS;
+                    bonus = GinRummyUtil.BIG_GIN_BONUS;
                 }
                 else if (points1 == 0)
                 {
@@ -340,8 +348,8 @@ namespace UnityGinRummy
             {
                 if (points2 == 0 && gin)
                 {
-                    player2Points += points1 + 2 * GinRummyUtil.GIN_BONUS;
-                    bonus = 2 * GinRummyUtil.GIN_BONUS;
+                    player2Points += points1 + GinRummyUtil.BIG_GIN_BONUS;
+                    bonus = GinRummyUtil.BIG_GIN_BONUS;
                 }
                 else if (points2 == 0)
                 {
@@ -364,8 +372,7 @@ namespace UnityGinRummy
 
             SetScoresText(points1, points2, playerKnocked, bonus);
 
-            gameState = GameState.HandFinished;
-            GameFlow();
+            StartCoroutine(WaitForHandFinishedFunction());
         }
 
         void OnHandFinished()
@@ -652,6 +659,8 @@ namespace UnityGinRummy
                         selectedCard.OnSelected(false);
                         selectedCard = null;
                         ButtonText.text = "";
+                        if (playerCanKnock)
+                            ButtonText.text = "Knock";
                     }
                     else
                     {
