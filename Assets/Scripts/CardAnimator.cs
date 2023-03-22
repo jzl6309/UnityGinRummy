@@ -94,6 +94,7 @@ namespace UnityGinRummy
             for (int i = start; i > stop + 1; i--)
             {
                 card = DisplayingCards[i];
+                card.SetDisplayOrder(-1);
 
                 if (p % 2 == 0)
                 {
