@@ -23,6 +23,7 @@ namespace UnityGinRummy
         public GameObject Player1Icon;
         public GameObject Player2Icon;
         public GameObject StartButton;
+        public Text WaitMessageText;
         public InputField UsernameInputField;
 
         string username;
@@ -72,6 +73,7 @@ namespace UnityGinRummy
             Player2Position.SetActive(true);
             Player2Icon.SetActive(true);
             StartButton.SetActive(true);
+            WaitMessageText.text = "";
         }
 
         void HideAllPopover()
@@ -83,6 +85,7 @@ namespace UnityGinRummy
             Player2Position.SetActive(false);
             Player2Icon.SetActive(false);
             StartButton.SetActive(false);
+            WaitMessageText.text = "";
         }
 
         void CheckInToRoom()
@@ -161,6 +164,7 @@ namespace UnityGinRummy
                         {
                             Player1Position.SetActive(true);
                             Player1Icon.SetActive(true);
+                            WaitMessageText.text = "Waiting on another player...";
                         }
                         else
                         {
@@ -168,6 +172,7 @@ namespace UnityGinRummy
                             Player1Icon.SetActive(true);
                             Player2Position.SetActive(true);
                             Player2Icon.SetActive(true);
+                            WaitMessageText.text = "";
 
                             if (NetworkClient.Lobby.IsOwner)
                             {
