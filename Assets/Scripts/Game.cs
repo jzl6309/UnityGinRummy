@@ -20,11 +20,11 @@ namespace UnityGinRummy
 
         CardAnimator cardAnimator;
 
-        Player player1;
-        Player player2;
-        Player faceUpPile;
-        Player currentTurnPlayer;
-        Player playerKnocked;
+        protected Player player1;
+        protected Player player2;
+        protected Player faceUpPile;
+        protected Player currentTurnPlayer;
+        protected Player playerKnocked;
         int player1Points = 0;
         int player2Points = 0;
 
@@ -49,7 +49,7 @@ namespace UnityGinRummy
 
         public GameState gameState = GameState.Waiting;
 
-        private void Awake()
+        protected void Awake()
         {
             player1 = new Player();
             player1.PlayerId = "Player 1";

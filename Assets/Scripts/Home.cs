@@ -33,6 +33,27 @@ namespace UnityGinRummy
             HideAllPopover();
             NetworkClient.Lobby.OnLobbyConnectedEvent += OnLobbyConnected;
             NetworkClient.Lobby.OnNewPlayerJoinRoomEvent += OnNewPlayerJoinRoomEvent;
+            NetworkClient.Lobby.OnRoomReadyEvent += OnRoomReadyEvent;
+        }
+
+        void OnRoomReadyEvent(SWRoomReadyEventData eventData)
+        {
+            ConnectToRoom();
+        }
+
+        void ConnectToRoom()
+        {
+            NetworkClient.Instance.ConnectToRoom((connected) =>
+            {
+                if (connected)
+                {
+                    SceneManager.LoadScene("Multiplayer");
+                }
+                else
+                {
+                    Debug.Log("Failed connection");
+                }
+            });
         }
 
         void OnNewPlayerJoinRoomEvent(SWJoinRoomEventData eventData)
@@ -129,11 +150,6 @@ namespace UnityGinRummy
 
         }
 
-        void ConnectToRoom()
-        {
-            // TODO
-        }
-
         void JoinOrCreateRoom()
         {
             NetworkClient.Lobby.JoinOrCreateRoom(false, 2, 60, (successful, reply, error) => {
@@ -188,6 +204,20 @@ namespace UnityGinRummy
             });
         }
 
+        void StartRoom()
+        {
+            NetworkClient.Lobby.StartRoom((successful, error) => {
+                if (successful)
+                {
+                    Debug.Log("Started room.");
+                }
+                else
+                {
+                    Debug.Log("Failed to start room " + error);
+                }
+            });
+        }
+
         void LeaveRoom()
         {
             NetworkClient.Lobby.LeaveRoom((successful, error) => {
@@ -236,12 +266,12 @@ namespace UnityGinRummy
 
         public void OnOnlineRoomStartClicked()
         {
-
+            StartRoom();
         }
 
         public void playComputer()
         {
-            SceneManager.LoadScene(0);
+            SceneManager.LoadScene("Game");
         }
 
         public void quit()
