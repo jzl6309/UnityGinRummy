@@ -18,12 +18,13 @@ namespace UnityGinRummy
         public Text Player2ScoreText;
         public Text HandScoreText;
 
-        CardAnimator cardAnimator;
+        protected CardAnimator cardAnimator;
 
         protected Player player1;
         protected Player player2;
         protected Player faceUpPile;
         protected Player currentTurnPlayer;
+        protected Player currentTurnTargetPlayer;
         protected Player playerKnocked;
         int player1Points = 0;
         int player2Points = 0;
@@ -79,7 +80,7 @@ namespace UnityGinRummy
             GameFlow();
         }
 
-        public void GameFlow()
+        public virtual void GameFlow()
         {
             if (gameState > GameState.GameStarted && gameState < GameState.GameFinished)
             {
@@ -147,7 +148,7 @@ namespace UnityGinRummy
             }
         }
         
-        void OnGameStart()
+        protected virtual void OnGameStart()
         {
             gameDataManager = new GameDataManager(player1, player2, faceUpPile);
             gameDataManager.Shuffle();
@@ -479,7 +480,7 @@ namespace UnityGinRummy
             }
         }
 
-        public void AllAnimationsFinished()
+        public virtual void AllAnimationsFinished()
         {
             GameFlow();
         }

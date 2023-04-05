@@ -6,6 +6,12 @@ using UnityEngine;
 namespace UnityGinRummy
 {
     [Serializable]
+    public class EncryptedData
+    {
+        public byte[] data;
+    }
+
+    [Serializable]
     public class GameDataManager
     {
         Player player1;
@@ -351,6 +357,62 @@ namespace UnityGinRummy
                 finalPoints.Add(deadwood);
             }
             return finalPoints;
+        }
+
+        public EncryptedData EncryptedData()
+        {
+            Byte[] data = protectedData.ToArray();
+
+            EncryptedData encryptedData = new EncryptedData();
+            encryptedData.data = data;
+
+            return encryptedData;
+        }
+
+        public void ApplyEncryptedData(EncryptedData encryptedData)
+        {
+            if(encryptedData == null)
+            {
+                return;
+            }
+
+            protectedData.ApplyByteArray(encryptedData.data);
+        }
+
+        public void SetGameState(Game.GameState gamestate)
+        {
+            protectedData.SetCurrentGameState((int)gamestate);
+        }
+
+        public Game.GameState GetGameState()
+        {
+            return (Game.GameState)protectedData.GetCurrentGameState();
+        }
+
+        public Player GetCurrentTurnPlayer()
+        {
+            string playerId = protectedData.GetCurrentTurnPlayerId();
+            if (playerId.Equals(player1.PlayerId))
+            {
+                return player1;
+            }
+            else
+            {
+                return player2;
+            }
+        }
+
+        public Player GetCurrentTurnTargetPlayer()
+        {
+            string playerId = protectedData.GetCurrentTurnPlayerId();
+            if (playerId.Equals(player1.PlayerId))
+            {
+                return player2;
+            }
+            else
+            {
+                return player1;
+            }
         }
     }
 }

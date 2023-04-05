@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using SWNetwork;
 
 namespace UnityGinRummy
 {
@@ -22,12 +24,17 @@ namespace UnityGinRummy
         string player2ID;
         [SerializeField]
         string faceUpID;
+        [SerializeField]
+        string currentTurnPlayerId;
+        [SerializeField]
+        int currentGameState;
 
 
         public ProtectedData(string p1ID, string p2ID, string cardPileID)
         {
             player1ID = p1ID;
             player2ID = p2ID;
+            currentTurnPlayerId = "";
             faceUpID = cardPileID;
         }
 
@@ -154,6 +161,63 @@ namespace UnityGinRummy
                 return faceUpCardPile;
             }
 
+        }
+
+        public void SetCurrentTurnPlayerId(string playerId)
+        {
+            currentTurnPlayerId = playerId;
+        }
+
+        public string GetCurrentTurnPlayerId()
+        {
+            return currentTurnPlayerId;
+        }
+
+        public void SetCurrentGameState(int gamestate)
+        {
+            currentGameState = gamestate;
+        }
+
+        public int GetCurrentGameState()
+        {
+            return currentGameState;
+        }
+
+        public Byte[] ToArray()
+        {
+            SWNetworkMessage msg = new SWNetworkMessage();
+            msg.Push((byte)poolOfCards.Count);
+            msg.PushByteArray(poolOfCards.ToArray());
+
+            msg.Push((byte)player1Cards.Count);
+            msg.PushByteArray(player1Cards.ToArray());
+            msg.Push((byte)player2Cards.Count);
+            msg.PushByteArray(player2Cards.ToArray());
+
+            msg.PushUTF8ShortString(player1ID);
+            msg.PushUTF8ShortString(player2ID);
+
+            msg.PushUTF8ShortString(currentTurnPlayerId);
+            msg.Push(currentGameState);
+
+            return msg.ToArray();
+        }
+
+        public void ApplyByteArray(Byte[] byteArray)
+        {
+            SWNetworkMessage msg = new SWNetworkMessage(byteArray);
+            byte poolofCardsCount = msg.PopByte();
+            poolOfCards = msg.PopByteArray(poolofCardsCount).ToList();
+            byte player1CardsCount = msg.PopByte();
+            player1Cards = msg.PopByteArray(player1CardsCount).ToList();
+            byte player2CardsCount = msg.PopByte();
+            player2Cards = msg.PopByteArray(player2CardsCount).ToList();
+
+            player1ID = msg.PopUTF8ShortString();
+            player2ID = msg.PopUTF8ShortString();
+
+            currentTurnPlayerId = msg.PopUTF8ShortString();
+            currentGameState = msg.PopInt32();
         }
     }
 }
