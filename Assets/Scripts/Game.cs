@@ -76,6 +76,7 @@ namespace UnityGinRummy
         // Start is called before the first frame update
         void Start()
         {
+            Debug.Log("base start");
             gameState = GameState.GameStarted;
             GameFlow();
         }

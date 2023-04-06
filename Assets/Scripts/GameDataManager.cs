@@ -361,6 +361,7 @@ namespace UnityGinRummy
 
         public EncryptedData EncryptedData()
         {
+            Debug.Log("EncryptedData");
             Byte[] data = protectedData.ToArray();
 
             EncryptedData encryptedData = new EncryptedData();
@@ -371,6 +372,7 @@ namespace UnityGinRummy
 
         public void ApplyEncryptedData(EncryptedData encryptedData)
         {
+            Debug.Log("ApplyEncryptedData");
             if(encryptedData == null)
             {
                 return;

@@ -198,6 +198,7 @@ namespace UnityGinRummy
             msg.PushUTF8ShortString(player2ID);
 
             msg.PushUTF8ShortString(currentTurnPlayerId);
+            Debug.Log("encrypted gamestate " + currentGameState);
             msg.Push(currentGameState);
 
             return msg.ToArray();
@@ -218,6 +219,7 @@ namespace UnityGinRummy
 
             currentTurnPlayerId = msg.PopUTF8ShortString();
             currentGameState = msg.PopInt32();
+            Debug.Log("dencrypted gamestate " + currentGameState);
         }
     }
 }

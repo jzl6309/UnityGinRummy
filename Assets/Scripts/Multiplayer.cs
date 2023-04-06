@@ -59,6 +59,7 @@ namespace UnityGinRummy
 
         public void OnGameDataReady(EncryptedData encryptedData)
         {
+            Debug.Log("OnGameDataReady");
             if (NetworkClient.Instance.IsHost)
             {
                 gameState = GameState.GameStarted;
@@ -71,6 +72,7 @@ namespace UnityGinRummy
         
         public void OnGameDataChanged(EncryptedData encryptedData)
         {
+            Debug.Log("OnGameDataChanged");
             gameDataManager.ApplyEncryptedData(encryptedData);
             gameState = gameDataManager.GetGameState();
             currentTurnPlayer = gameDataManager.GetCurrentTurnPlayer();
@@ -93,11 +95,14 @@ namespace UnityGinRummy
                 gameState = GameState.FirstTurn;
 
                 gameDataManager.SetGameState(gameState);
+                Debug.Log("gamestate is " + gameState);
                 netCode.ModifyGameData(gameDataManager.EncryptedData());
             }
             
             GinRummyUtil.initialzeMeldTools();
+            
             cardAnimator.DealDisplayCards(player1, player2, faceUpPile);
+
         }
 
         public override void AllAnimationsFinished()
