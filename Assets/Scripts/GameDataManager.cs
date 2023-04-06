@@ -14,8 +14,8 @@ namespace UnityGinRummy
     [Serializable]
     public class GameDataManager
     {
-        Player player1;
-        Player player2;
+        Player localPlayer;
+        Player remotePlayer;
         Player faceUpPile;
 
         [SerializeField]
@@ -24,10 +24,10 @@ namespace UnityGinRummy
 
         public GameDataManager(Player one, Player two, Player cardPile)    
         {
-            player1 = one;
-            player2 = two;
+            localPlayer = one;
+            remotePlayer = two;
             faceUpPile = cardPile;
-            protectedData = new ProtectedData(player1.PlayerId, player2.PlayerId, faceUpPile.PlayerId);
+            protectedData = new ProtectedData(localPlayer.PlayerId, remotePlayer.PlayerId, faceUpPile.PlayerId);
         }
 
         public void Shuffle()
@@ -394,26 +394,26 @@ namespace UnityGinRummy
         public Player GetCurrentTurnPlayer()
         {
             string playerId = protectedData.GetCurrentTurnPlayerId();
-            if (playerId.Equals(player1.PlayerId))
+            if (playerId.Equals(localPlayer.PlayerId))
             {
-                return player1;
+                return localPlayer;
             }
             else
             {
-                return player2;
+                return remotePlayer;
             }
         }
 
         public Player GetCurrentTurnTargetPlayer()
         {
             string playerId = protectedData.GetCurrentTurnPlayerId();
-            if (playerId.Equals(player1.PlayerId))
+            if (playerId.Equals(localPlayer.PlayerId))
             {
-                return player2;
+                return remotePlayer;
             }
             else
             {
-                return player1;
+                return localPlayer;
             }
         }
     }

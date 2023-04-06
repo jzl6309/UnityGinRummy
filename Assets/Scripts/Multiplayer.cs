@@ -26,18 +26,18 @@ namespace UnityGinRummy
 
                         if (playerId.Equals(NetworkClient.Instance.PlayerId))
                         {
-                            player1.PlayerId = playerId;
-                            player1.PlayerName = playerName;
+                            localPlayer.PlayerId = playerId;
+                            localPlayer.PlayerName = playerName;
                         }
                         else
                         {
-                            player2.PlayerId = playerId;
-                            player2.PlayerName = playerName;
+                            remotePlayer.PlayerId = playerId;
+                            remotePlayer.PlayerName = playerName;
 
                         }
                     }
 
-                    gameDataManager = new GameDataManager(player1, player2, faceUpPile);
+                    gameDataManager = new GameDataManager(localPlayer, remotePlayer, faceUpPile);
                     netCode.EnableRoomPropertyAgent();
                 }
                 else
@@ -90,7 +90,7 @@ namespace UnityGinRummy
             if (NetworkClient.Instance.IsHost)
             {
                 gameDataManager.Shuffle();
-                gameDataManager.Deal(player1, player2, faceUpPile);
+                gameDataManager.Deal(localPlayer, remotePlayer, faceUpPile);
                 
                 gameState = GameState.FirstTurn;
 
@@ -101,7 +101,7 @@ namespace UnityGinRummy
             
             GinRummyUtil.initialzeMeldTools();
             
-            cardAnimator.DealDisplayCards(player1, player2, faceUpPile);
+            cardAnimator.DealDisplayCards(localPlayer, remotePlayer, faceUpPile);
 
         }
 

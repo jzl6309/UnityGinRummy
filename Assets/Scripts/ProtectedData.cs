@@ -36,6 +36,7 @@ namespace UnityGinRummy
             player2ID = p2ID;
             currentTurnPlayerId = "";
             faceUpID = cardPileID;
+            //CalculateKey(roomId);
         }
 
         public void SetPoolOfCards(List<byte> cards)

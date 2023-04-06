@@ -66,9 +66,11 @@ namespace UnityGinRummy
 
         private void OnDestroy()
         {
-            NetworkClient.Lobby.OnLobbyConnectedEvent -= OnLobbyConnected;
-            NetworkClient.Lobby.OnNewPlayerJoinRoomEvent -= OnNewPlayerJoinRoomEvent;
-
+            if (NetworkClient.Lobby != null)
+            {
+                NetworkClient.Lobby.OnLobbyConnectedEvent -= OnLobbyConnected;
+                NetworkClient.Lobby.OnNewPlayerJoinRoomEvent -= OnNewPlayerJoinRoomEvent;
+            }
         }
 
         void ShowOnlinePopUp()
@@ -174,26 +176,25 @@ namespace UnityGinRummy
                 {
                     Debug.Log("Got players " + reply);
                     foreach (SWPlayer player in reply.players)
-                    {
                         Debug.Log("Player custom data: " + player.GetCustomDataString());
-                        if(reply.players.Count == 1)
-                        {
-                            Player1Position.SetActive(true);
-                            Player1Icon.SetActive(true);
-                            WaitMessageText.text = "Waiting on another player...";
-                        }
-                        else
-                        {
-                            Player1Position.SetActive(true);
-                            Player1Icon.SetActive(true);
-                            Player2Position.SetActive(true);
-                            Player2Icon.SetActive(true);
-                            WaitMessageText.text = "";
+                        
+                    if(reply.players.Count == 1)
+                    {
+                        Player1Position.SetActive(true);
+                        Player1Icon.SetActive(true);
+                        WaitMessageText.text = "Waiting on another player...";
+                    }
+                    else
+                    {
+                        Player1Position.SetActive(true);
+                        Player1Icon.SetActive(true);
+                        Player2Position.SetActive(true);
+                        Player2Icon.SetActive(true);
+                        WaitMessageText.text = "";
 
-                            if (NetworkClient.Lobby.IsOwner)
-                            {
-                                ShowReadyToStart();
-                            }
+                        if (NetworkClient.Lobby.IsOwner)
+                        {
+                            ShowReadyToStart();
                         }
                     }
                 }

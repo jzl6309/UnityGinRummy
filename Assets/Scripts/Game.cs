@@ -10,7 +10,9 @@ namespace UnityGinRummy
 {
     public class Game : MonoBehaviour
     {
+        [SerializeField]
         public GameDataManager gameDataManager;
+        
         public Text MessageText;
         public Text ButtonText;
         public Text DeadWoodText;
@@ -20,11 +22,18 @@ namespace UnityGinRummy
 
         protected CardAnimator cardAnimator;
 
-        protected Player player1;
-        protected Player player2;
+        [SerializeField]
+        protected Player localPlayer;
+        [SerializeField]
+        protected Player remotePlayer;
+        [SerializeField]
         protected Player faceUpPile;
+
+        [SerializeField]
         protected Player currentTurnPlayer;
+        [SerializeField]
         protected Player currentTurnTargetPlayer;
+
         protected Player playerKnocked;
         int player1Points = 0;
         int player2Points = 0;
@@ -48,21 +57,23 @@ namespace UnityGinRummy
             GameFinished
         };
 
+        [SerializeField]
         public GameState gameState = GameState.Waiting;
 
         protected void Awake()
         {
-            player1 = new Player();
-            player1.PlayerId = "Player 1";
-            player1.PlayerName = "Player 1";
-            player1.Position = PlayerPositions[0].position;
-            player1.isBot = false;
+            Debug.Log("base awake");
+            localPlayer = new Player();
+            localPlayer.PlayerId = "Player 1";
+            localPlayer.PlayerName = "Player 1";
+            localPlayer.Position = PlayerPositions[0].position;
+            localPlayer.isBot = false;
 
-            player2 = new Player();
-            player2.PlayerId = "Player 2";
-            player2.PlayerName = "Gin Rummy Bot";
-            player2.Position = PlayerPositions[1].position;
-            player2.isBot = true;
+            remotePlayer = new Player();
+            remotePlayer.PlayerId = "Player 2";
+            remotePlayer.PlayerName = "Gin Rummy Bot";
+            remotePlayer.Position = PlayerPositions[1].position;
+            remotePlayer.isBot = true;
 
             faceUpPile = new Player();
             faceUpPile.PlayerId = "Face Up Pile";
@@ -151,12 +162,12 @@ namespace UnityGinRummy
         
         protected virtual void OnGameStart()
         {
-            gameDataManager = new GameDataManager(player1, player2, faceUpPile);
+            gameDataManager = new GameDataManager(localPlayer, remotePlayer, faceUpPile);
             gameDataManager.Shuffle();
-            gameDataManager.Deal(player1, player2, faceUpPile);
+            gameDataManager.Deal(localPlayer, remotePlayer, faceUpPile);
             GinRummyUtil.initialzeMeldTools();
 
-            cardAnimator.DealDisplayCards(player1, player2, faceUpPile);
+            cardAnimator.DealDisplayCards(localPlayer, remotePlayer, faceUpPile);
 
             gameState = GameState.FirstTurn;
         }
@@ -181,15 +192,15 @@ namespace UnityGinRummy
             GameFlow();
         }
 
-        void OnFirstTurn()
+        protected virtual void OnFirstTurn()
         {
             SwitchTurns();
-            if (currentTurnPlayer == player1)
+            if (currentTurnPlayer == localPlayer)
             {
                 MessageText.text = "Take Face Up Card?";
                 ButtonText.text = "Pass";
             }
-            else if (currentTurnPlayer == player2)
+            else if (currentTurnPlayer == remotePlayer)
             {
                 MessageText.text = "Oppenent's Turn";
             }
@@ -212,12 +223,12 @@ namespace UnityGinRummy
 
         void OnFirstTurnPass()
         {
-            if (currentTurnPlayer == player1)
+            if (currentTurnPlayer == localPlayer)
             {
                 MessageText.text = "Take Face Up Card?";
                 ButtonText.text = "Pass";
             }
-            else if (currentTurnPlayer == player2)
+            else if (currentTurnPlayer == remotePlayer)
             {
                 MessageText.text = "Opponent's Turn";
             }
@@ -243,12 +254,12 @@ namespace UnityGinRummy
         void OnSelectDraw()
         {
             Debug.Log(currentTurnPlayer.PlayerId + " is ready to draw");
-            if (currentTurnPlayer == player1)
+            if (currentTurnPlayer == localPlayer)
             {
                 MessageText.text = "Draw a card";
                 ButtonText.text = "Draw";
             }
-            else if (currentTurnPlayer == player2)
+            else if (currentTurnPlayer == remotePlayer)
             {
                 MessageText.text = "Opponent's Turn";
                 ButtonText.text = "";
@@ -275,7 +286,7 @@ namespace UnityGinRummy
         {
             playerCanKnock = gameDataManager.CheckKnock(currentTurnPlayer);
 
-            if (currentTurnPlayer == player1)
+            if (currentTurnPlayer == localPlayer)
             {
                 MessageText.text = "Discard";
                 if (playerCanKnock)
@@ -285,7 +296,7 @@ namespace UnityGinRummy
                     ButtonText.text = "";
                 }
             }
-            else if (currentTurnPlayer == player2)
+            else if (currentTurnPlayer == remotePlayer)
             {
                 MessageText.text = "Opponent's Turn";
                 ButtonText.text = "";
@@ -315,7 +326,7 @@ namespace UnityGinRummy
             CheckOppMelds();
             ShowAllCards();
 
-            List<int> finalPoints = gameDataManager.GetFinalPoints(player1, player2);
+            List<int> finalPoints = gameDataManager.GetFinalPoints(localPlayer, remotePlayer);
 
             int points1 = finalPoints[0];
             int points2 = finalPoints[1];
@@ -324,7 +335,7 @@ namespace UnityGinRummy
             Debug.Log("Player 1 deadwood points " + points1);
             Debug.Log("Player 2 deadwood points " + points2);
 
-            if (playerKnocked == player1)
+            if (playerKnocked == localPlayer)
             {
                 if (points1 == 0 && gin)
                 {
@@ -369,8 +380,8 @@ namespace UnityGinRummy
                 }
             }
 
-            Debug.Log(player1.PlayerId + " has " + player1Points + " points");
-            Debug.Log(player2.PlayerId + " has " + player2Points + " points");
+            Debug.Log(localPlayer.PlayerId + " has " + player1Points + " points");
+            Debug.Log(remotePlayer.PlayerId + " has " + player2Points + " points");
 
             SetScoresText(points1, points2, playerKnocked, bonus);
 
@@ -384,9 +395,9 @@ namespace UnityGinRummy
                 HideAllCards();
 
                 Debug.Log("I am clearing player 1 cards");
-                cardAnimator.ClearAllCards(player1);
+                cardAnimator.ClearAllCards(localPlayer);
                 Debug.Log("I am clearing player 2 cards");
-                cardAnimator.ClearAllCards(player2);
+                cardAnimator.ClearAllCards(remotePlayer);
                 Debug.Log("I am clearing faceUpPile cards");
                 cardAnimator.ClearAllCards(faceUpPile);
 
@@ -402,7 +413,7 @@ namespace UnityGinRummy
 
         public void SetScoresText(int player1Deadwood, int player2Deadwood, Player playerKnocked, int bonus)
         {
-            if (playerKnocked == player1)
+            if (playerKnocked == localPlayer)
             {
                 if (player1Deadwood < player2Deadwood) 
                 {
@@ -496,22 +507,22 @@ namespace UnityGinRummy
                 if (n == 0) currentTurnPlayer = player1;
                 else currentTurnPlayer = player2;
                 */
-                currentTurnPlayer = player1;
+                currentTurnPlayer = localPlayer;
             }
-            else if (currentTurnPlayer == player1)
+            else if (currentTurnPlayer == localPlayer)
             {
-                currentTurnPlayer = player2;
+                currentTurnPlayer = remotePlayer;
             }
-            else if (currentTurnPlayer == player2)
+            else if (currentTurnPlayer == remotePlayer)
             {
-                currentTurnPlayer = player1;
+                currentTurnPlayer = localPlayer;
             }
         }
 
         public void SetCurrentMelds(Player player)
         {
             int deadwood = gameDataManager.SetCurrentMelds(player);
-            if (currentTurnPlayer == player1)
+            if (currentTurnPlayer == localPlayer)
             {
                 DeadWoodText.text = deadwood.ToString();
             }
@@ -519,28 +530,28 @@ namespace UnityGinRummy
 
         public void CheckForMelds()
         {
-            List<byte> playersCards = gameDataManager.PlayerCards(player1);
-            player1.SetCardValues(playersCards);
-            SetCurrentMelds(player1);
+            List<byte> playersCards = gameDataManager.PlayerCards(localPlayer);
+            localPlayer.SetCardValues(playersCards);
+            SetCurrentMelds(localPlayer);
         }
 
         public void CheckOppMelds()
         {
-            List<byte> playersCards = gameDataManager.PlayerCards(player2);
-            player2.SetCardValues(playersCards);
-            SetCurrentMelds(player2);
+            List<byte> playersCards = gameDataManager.PlayerCards(remotePlayer);
+            remotePlayer.SetCardValues(playersCards);
+            SetCurrentMelds(remotePlayer);
         }
 
         public void ShowAllCards()
         {
-            player1.ShowCards();
-            player2.ShowCards();
+            localPlayer.ShowCards();
+            remotePlayer.ShowCards();
         }
 
         public void HideAllCards()
         {
-            player1.HideCards();
-            player2.HideCards();
+            localPlayer.HideCards();
+            remotePlayer.HideCards();
             faceUpPile.HideCards();
         }
 
@@ -552,8 +563,8 @@ namespace UnityGinRummy
 
         public void ShowAndHideCards()
         {
-            player1.ShowCards();
-            player2.HideCards();
+            localPlayer.ShowCards();
+            remotePlayer.HideCards();
             faceUpPile.ShowCards();
         }
 
@@ -618,7 +629,7 @@ namespace UnityGinRummy
         {
             if (gameState == GameState.FirstTurn)
             {
-                if (card.OwnerId == faceUpPile.PlayerId && currentTurnPlayer == player1)
+                if (card.OwnerId == faceUpPile.PlayerId && currentTurnPlayer == localPlayer)
                 {
                     if (selectedCard != null && selectedCard.isSelected)
                     {
@@ -676,7 +687,7 @@ namespace UnityGinRummy
 
         public void OnOkSelected()
         {
-            if (gameState == GameState.FirstTurn && currentTurnPlayer == player1)
+            if (gameState == GameState.FirstTurn && currentTurnPlayer == localPlayer)
             {
                 if (selectedCard != null)
                 {
@@ -694,7 +705,7 @@ namespace UnityGinRummy
                     GameFlow();
                 }
             }
-            else if (gameState == GameState.FirstTurnPass && currentTurnPlayer == player1)
+            else if (gameState == GameState.FirstTurnPass && currentTurnPlayer == localPlayer)
             {
                 if (selectedCard != null)
                 {
@@ -712,13 +723,13 @@ namespace UnityGinRummy
                     GameFlow();
                 }
             }
-            else if (gameState == GameState.SelectDraw && currentTurnPlayer == player1)
+            else if (gameState == GameState.SelectDraw && currentTurnPlayer == localPlayer)
             {
                 DrawCard();
                 gameState = GameState.SelectDiscard;
                 GameFlow();
             }
-            else if (gameState == GameState.SelectDiscard && currentTurnPlayer == player1)
+            else if (gameState == GameState.SelectDiscard && currentTurnPlayer == localPlayer)
             {
                 if (selectedCard != null)
                 {
