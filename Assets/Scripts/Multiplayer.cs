@@ -12,15 +12,18 @@ namespace UnityGinRummy
         protected new void Awake()
         {
             base.Awake();
-            
+            remotePlayer.isBot = false;
+            Debug.Log("Multiplayer awake");
             netCode = FindObjectOfType<NetCode>();
             
             NetworkClient.Lobby.GetPlayersInRoom((successful, reply, error) =>
             {
                 if (successful)
                 {
+                    int i = 0;
                     foreach(SWPlayer player in reply.players)
                     {
+                        Debug.Log("num players " + i++);
                         string playerName = player.GetCustomDataString();
                         string playerId = player.id;
 
@@ -60,13 +63,32 @@ namespace UnityGinRummy
         public void OnGameDataReady(EncryptedData encryptedData)
         {
             Debug.Log("OnGameDataReady");
-            if (NetworkClient.Instance.IsHost)
-            {
-                gameState = GameState.GameStarted;
-                gameDataManager.SetGameState(gameState);
+            if (encryptedData == null)
+            { 
+                if (NetworkClient.Instance.IsHost)
+                {
+                    gameState = GameState.GameStarted;
+                    gameDataManager.SetGameState(gameState);
 
-                netCode.ModifyGameData(gameDataManager.EncryptedData());
-                netCode.NotifyOtherPlayerGameStateChanged();
+                    netCode.ModifyGameData(gameDataManager.EncryptedData());
+                    netCode.NotifyOtherPlayerGameStateChanged();
+                }
+            }
+            else
+            {
+                gameDataManager.ApplyEncryptedData(encryptedData);
+                gameState = gameDataManager.GetGameState();
+                Debug.Log("OnGameDataReady - gameState " + gameState);
+                currentTurnPlayer = gameDataManager.GetCurrentTurnPlayer();
+                currentTurnTargetPlayer = gameDataManager.GetCurrentTurnTargetPlayer();
+            
+                if (gameState > GameState.GameStarted)
+                {
+                    Debug.Log("OnGameDataReady - GameState");
+                    cardAnimator.DealDisplayCards(localPlayer, remotePlayer, faceUpPile);
+
+                    base.GameFlow();
+                }
             }
         }
         

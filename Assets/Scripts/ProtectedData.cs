@@ -186,6 +186,7 @@ namespace UnityGinRummy
 
         public Byte[] ToArray()
         {
+            Debug.Log("ProtectedData - ToArray");
             SWNetworkMessage msg = new SWNetworkMessage();
             msg.Push((byte)poolOfCards.Count);
             msg.PushByteArray(poolOfCards.ToArray());
@@ -207,6 +208,7 @@ namespace UnityGinRummy
 
         public void ApplyByteArray(Byte[] byteArray)
         {
+            Debug.Log("ProtectedData - ApplyByteArray");
             SWNetworkMessage msg = new SWNetworkMessage(byteArray);
             byte poolofCardsCount = msg.PopByte();
             poolOfCards = msg.PopByteArray(poolofCardsCount).ToList();
