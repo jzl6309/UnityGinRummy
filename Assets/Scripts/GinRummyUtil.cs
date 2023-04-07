@@ -80,6 +80,14 @@ namespace UnityGinRummy
 		
 		public static void initialzeMeldTools()
         {
+			for (byte code = 0; code < 52; code++)
+			{
+				Card card = new Card();
+				card.SetCardValue(code);
+				card.SetCardId(code);
+				Card.AddCard(card);
+			}
+
 			for (int rank = 0; rank < Constants.NUM_RANKS; rank++)
 				DEADWOOD_POINTS[rank] = Math.Min(rank + 1, 10);
 

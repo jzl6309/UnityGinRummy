@@ -36,7 +36,6 @@ namespace UnityGinRummy
                         {
                             remotePlayer.PlayerId = playerId;
                             remotePlayer.PlayerName = playerName;
-
                         }
                     }
 

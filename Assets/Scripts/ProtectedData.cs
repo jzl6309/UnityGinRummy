@@ -195,9 +195,12 @@ namespace UnityGinRummy
             msg.PushByteArray(player1Cards.ToArray());
             msg.Push((byte)player2Cards.Count);
             msg.PushByteArray(player2Cards.ToArray());
+            msg.Push((byte)faceUpCardPile.Count);
+            msg.PushByteArray(faceUpCardPile.ToArray());
 
             msg.PushUTF8ShortString(player1ID);
             msg.PushUTF8ShortString(player2ID);
+            msg.PushUTF8ShortString(faceUpID);
 
             msg.PushUTF8ShortString(currentTurnPlayerId);
             Debug.Log("encrypted gamestate " + currentGameState);
@@ -212,13 +215,17 @@ namespace UnityGinRummy
             SWNetworkMessage msg = new SWNetworkMessage(byteArray);
             byte poolofCardsCount = msg.PopByte();
             poolOfCards = msg.PopByteArray(poolofCardsCount).ToList();
+
             byte player1CardsCount = msg.PopByte();
             player1Cards = msg.PopByteArray(player1CardsCount).ToList();
             byte player2CardsCount = msg.PopByte();
             player2Cards = msg.PopByteArray(player2CardsCount).ToList();
+            byte faceUpPileCount = msg.PopByte();
+            faceUpCardPile = msg.PopByteArray(faceUpPileCount).ToList();
 
             player1ID = msg.PopUTF8ShortString();
             player2ID = msg.PopUTF8ShortString();
+            faceUpID = msg.PopUTF8ShortString();
 
             currentTurnPlayerId = msg.PopUTF8ShortString();
             currentGameState = msg.PopInt32();

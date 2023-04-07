@@ -37,10 +37,12 @@ namespace UnityGinRummy
             for (byte code = 0; code < 52; code++)
             {
                 cardValues.Add(code);
+                /*
                 Card card = new Card();
                 card.SetCardValue(code);
                 card.SetCardId(code);
                 Card.AddCard(card);
+                */
             }
 
             List<byte> poolOfCards = new List<byte>();
@@ -394,7 +396,7 @@ namespace UnityGinRummy
         public Player GetCurrentTurnPlayer()
         {
             string playerId = protectedData.GetCurrentTurnPlayerId();
-            if (playerId.Equals(localPlayer.PlayerId))
+            if (playerId.Equals(localPlayer.PlayerId)) 
             {
                 return localPlayer;
             }

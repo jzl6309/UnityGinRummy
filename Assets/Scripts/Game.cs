@@ -162,10 +162,10 @@ namespace UnityGinRummy
         
         protected virtual void OnGameStart()
         {
+            GinRummyUtil.initialzeMeldTools();
             gameDataManager = new GameDataManager(localPlayer, remotePlayer, faceUpPile);
             gameDataManager.Shuffle();
             gameDataManager.Deal(localPlayer, remotePlayer, faceUpPile);
-            GinRummyUtil.initialzeMeldTools();
 
             cardAnimator.DealDisplayCards(localPlayer, remotePlayer, faceUpPile);
 
@@ -194,6 +194,7 @@ namespace UnityGinRummy
 
         protected virtual void OnFirstTurn()
         {
+            Debug.Log("OnFirstTurn");
             SwitchTurns();
             if (currentTurnPlayer == localPlayer)
             {
@@ -499,6 +500,8 @@ namespace UnityGinRummy
 
         public void SwitchTurns()
         {
+            Debug.Log("SwitchTurns - " + currentTurnPlayer.PlayerName);
+            /*
             if (currentTurnPlayer == null)
             {
                 /*
@@ -506,14 +509,20 @@ namespace UnityGinRummy
                 int n = rand.Next(2);
                 if (n == 0) currentTurnPlayer = player1;
                 else currentTurnPlayer = player2;
-                */
+                
+                Debug.Log("SwitchTurns - set current player");
                 currentTurnPlayer = localPlayer;
             }
-            else if (currentTurnPlayer == localPlayer)
+            */
+            if (currentTurnPlayer == localPlayer)
             {
                 currentTurnPlayer = remotePlayer;
             }
             else if (currentTurnPlayer == remotePlayer)
+            {
+                currentTurnPlayer = localPlayer;
+            }
+            else
             {
                 currentTurnPlayer = localPlayer;
             }
