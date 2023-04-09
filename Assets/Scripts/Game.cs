@@ -38,9 +38,9 @@ namespace UnityGinRummy
         int player1Points = 0;
         int player2Points = 0;
 
-        Card selectedCard;
-        byte drawnFaceUpCard = 255;
-        bool playerCanKnock = false;
+        protected Card selectedCard;
+        protected byte drawnFaceUpCard = 255;
+        protected bool playerCanKnock = false;
 
         public List<Transform> PlayerPositions = new List<Transform>();
 
@@ -48,8 +48,11 @@ namespace UnityGinRummy
         {
             Waiting,
             GameStarted,
+            FirstTurnStarted,
             FirstTurn,
+            FirstTurnPassStarted,
             FirstTurnPass,
+            ConfirmTakeFaceUpCard,
             SelectDraw,
             SelectDiscard,
             Knock,
@@ -96,8 +99,11 @@ namespace UnityGinRummy
         {
             if (gameState > GameState.GameStarted && gameState < GameState.GameFinished)
             {
-                SetFaceUpPile();
-                CheckForMelds();
+                if (gameState != GameState.ConfirmTakeFaceUpCard)
+                {
+                    SetFaceUpPile();
+                    CheckForMelds();
+                }
                 if (gameState != GameState.HandFinished && gameState != GameState.GameFinished)
                     ShowAndHideCards();
             }
@@ -115,16 +121,34 @@ namespace UnityGinRummy
                         OnGameStart();
                         break;
                     }
+                case GameState.FirstTurnStarted:
+                    {
+                        Debug.Log("First Turn Started");
+                        OnFirstTurnStarted();
+                        break;
+                    }
                 case GameState.FirstTurn:
                     {
                         Debug.Log("First Turn");
                         OnFirstTurn();
                         break;
                     }
+                case GameState.FirstTurnPassStarted:
+                    {
+                        Debug.Log("First Turn Pass Started");
+                        OnFirstTurnPassStarted();
+                        break;
+                    }
                 case GameState.FirstTurnPass:
                     {
                         Debug.Log("First Turn Pass");
                         OnFirstTurnPass();
+                        break;
+                    }
+                case GameState.ConfirmTakeFaceUpCard:
+                    {
+                        Debug.Log("ConfirmTakeFaceUpCard");
+                        OnConfirmTakeFaceUpCard();
                         break;
                     }
                 case GameState.SelectDraw:
@@ -172,30 +196,17 @@ namespace UnityGinRummy
             gameState = GameState.FirstTurn;
         }
 
-        IEnumerator WaitForFunction()
+        protected virtual void OnFirstTurnStarted()
         {
-            yield return new WaitForSeconds(2);
-            GameFlow();
-        }
-
-        IEnumerator WaitForDrawFunction()
-        {
-            yield return new WaitForSeconds(2);
-            gameState = GameState.SelectDiscard;
-            GameFlow();
-        }
-
-        IEnumerator WaitForHandFinishedFunction()
-        {
-            yield return new WaitForSeconds(3);
-            gameState = GameState.HandFinished;
+            Debug.Log("OnFirstTurnStarted");
+            SwitchTurns();
+            gameState = GameState.FirstTurn;
             GameFlow();
         }
 
         protected virtual void OnFirstTurn()
         {
             Debug.Log("OnFirstTurn");
-            SwitchTurns();
             if (currentTurnPlayer == localPlayer)
             {
                 MessageText.text = "Take Face Up Card?";
@@ -220,6 +231,14 @@ namespace UnityGinRummy
                 }
                 StartCoroutine(WaitForFunction());
             }
+        }
+
+        protected virtual void OnFirstTurnPassStarted()
+        {
+            Debug.Log("OnFirstPassTurnStarted");
+            SwitchTurns();
+            gameState = GameState.FirstTurnPass;
+            GameFlow();
         }
 
         void OnFirstTurnPass()
@@ -250,6 +269,11 @@ namespace UnityGinRummy
                 }
                 StartCoroutine(WaitForFunction());
             }
+        }
+
+        protected virtual void OnConfirmTakeFaceUpCard()
+        {
+            Debug.Log("OnConfirmTakeFaceUpCard");
         }
 
         void OnSelectDraw()
@@ -412,6 +436,26 @@ namespace UnityGinRummy
 
         }
 
+        public IEnumerator WaitForFunction()
+        {
+            yield return new WaitForSeconds(2);
+            GameFlow();
+        }
+
+        public IEnumerator WaitForDrawFunction()
+        {
+            yield return new WaitForSeconds(2);
+            gameState = GameState.SelectDiscard;
+            GameFlow();
+        }
+
+        public IEnumerator WaitForHandFinishedFunction()
+        {
+            yield return new WaitForSeconds(3);
+            gameState = GameState.HandFinished;
+            GameFlow();
+        }
+
         public void SetScoresText(int player1Deadwood, int player2Deadwood, Player playerKnocked, int bonus)
         {
             if (playerKnocked == localPlayer)
@@ -531,10 +575,16 @@ namespace UnityGinRummy
         public void SetCurrentMelds(Player player)
         {
             int deadwood = gameDataManager.SetCurrentMelds(player);
+            /*
             if (currentTurnPlayer == localPlayer)
             {
                 DeadWoodText.text = deadwood.ToString();
             }
+            else
+            {
+                DeadWoodText.text = deadwood.ToString();
+            }*/
+            DeadWoodText.text = deadwood.ToString();
         }
 
         public void CheckForMelds()
@@ -577,16 +627,15 @@ namespace UnityGinRummy
             faceUpPile.ShowCards();
         }
 
-        public void ReceiveCardFromFaceUpPile(Player player)
+        public virtual void ReceiveCardFromFaceUpPile(Player player)
         {
             byte card = gameDataManager.DrawFaceUpCard();
             drawnFaceUpCard = card;
 
             //Debug.Log("face up card is " + Card.GetRank(card) + " " + Card.GetSuit(card));
+            gameDataManager.AddCardToPlayer(player, card);
 
             cardAnimator.DrawDisplayingCardsFromFaceUpPile(player, faceUpPile, card);
-
-            gameDataManager.AddCardToPlayer(player, card);
         }
 
         public void DrawCard()
@@ -634,9 +683,27 @@ namespace UnityGinRummy
             drawnFaceUpCard = 255;
         }
 
-        public void OnCardSelected(Card card)
+        public virtual void OnCardSelected(Card card)
         {
             if (gameState == GameState.FirstTurn)
+            {
+                if (card.OwnerId == faceUpPile.PlayerId && currentTurnPlayer == localPlayer)
+                {
+                    if (selectedCard != null && selectedCard.isSelected)
+                    {
+                        selectedCard.OnSelected(false);
+                        selectedCard = null;
+                        ButtonText.text = "Pass";
+                    }
+                    else
+                    {
+                        selectedCard = card;
+                        selectedCard.OnSelected(true);
+                        ButtonText.text = "Take Card";
+                    }
+                }
+            }
+            if (gameState == GameState.FirstTurnPass)
             {
                 if (card.OwnerId == faceUpPile.PlayerId && currentTurnPlayer == localPlayer)
                 {
@@ -694,7 +761,7 @@ namespace UnityGinRummy
             }
         }
 
-        public void OnOkSelected()
+        public virtual void OnOkSelected()
         {
             if (gameState == GameState.FirstTurn && currentTurnPlayer == localPlayer)
             {
@@ -709,8 +776,7 @@ namespace UnityGinRummy
                 else
                 {
                     MessageText.text = "Pass";
-                    gameState = GameState.FirstTurnPass;
-                    SwitchTurns();
+                    gameState = GameState.FirstTurnPassStarted;
                     GameFlow();
                 }
             }

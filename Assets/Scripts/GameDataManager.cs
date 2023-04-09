@@ -393,6 +393,21 @@ namespace UnityGinRummy
             return (Game.GameState)protectedData.GetCurrentGameState();
         }
 
+        public void SetDrawnCard(byte card)
+        {
+            protectedData.SetDrawnCard(card);
+        }
+
+        public byte GetDrawnCard()
+        {
+            return protectedData.GetDrawnCard();
+        }
+
+        public void SetCurrentTurnPlayer(Player player)
+        {
+            protectedData.SetCurrentTurnPlayerId(player.PlayerId);
+        }
+
         public Player GetCurrentTurnPlayer()
         {
             string playerId = protectedData.GetCurrentTurnPlayerId();

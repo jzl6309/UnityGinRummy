@@ -8,10 +8,11 @@ namespace UnityGinRummy
     public class Multiplayer : Game
     {
         NetCode netCode;
-
+      
         protected new void Awake()
         {
             base.Awake();
+            GinRummyUtil.initialzeMeldTools();
             remotePlayer.isBot = false;
             Debug.Log("Multiplayer awake");
             netCode = FindObjectOfType<NetCode>();
@@ -107,14 +108,13 @@ namespace UnityGinRummy
 
         protected override void OnGameStart()
         {
-            GinRummyUtil.initialzeMeldTools();
             Debug.Log("OnGameStart - Multi");
             if (NetworkClient.Instance.IsHost)
             {
                 gameDataManager.Shuffle();
                 gameDataManager.Deal(localPlayer, remotePlayer, faceUpPile);
                 
-                gameState = GameState.FirstTurn;
+                gameState = GameState.FirstTurnStarted;
 
                 gameDataManager.SetGameState(gameState);
                 Debug.Log("gamestate is " + gameState);
@@ -122,14 +122,148 @@ namespace UnityGinRummy
             }
             
             cardAnimator.DealDisplayCards(localPlayer, remotePlayer, faceUpPile);
+        }
 
+        protected override void OnFirstTurnStarted()
+        {
+            Debug.Log("OnFirstTurnStarted - Multi");
+            if (NetworkClient.Instance.IsHost)
+            {
+                SwitchTurns();
+                gameState = GameState.FirstTurn;
+
+                gameDataManager.SetCurrentTurnPlayer(currentTurnPlayer);
+                gameDataManager.SetGameState(gameState);
+
+                netCode.ModifyGameData(gameDataManager.EncryptedData());
+                netCode.NotifyOtherPlayerGameStateChanged();
+            }
+        }
+
+        protected override void OnFirstTurnPassStarted()
+        {
+            Debug.Log("OnFirstTurnPassStarted - Multi");
+            if (NetworkClient.Instance.IsHost)
+            {
+                SwitchTurns();
+                gameState = GameState.FirstTurnPass;
+
+                gameDataManager.SetCurrentTurnPlayer(currentTurnPlayer);
+                gameDataManager.SetGameState(gameState);
+
+                netCode.ModifyGameData(gameDataManager.EncryptedData());
+                netCode.NotifyOtherPlayerGameStateChanged();
+            }
+        }
+
+        protected override void OnConfirmTakeFaceUpCard()
+        {
+            Debug.Log("OnConfirmTakeFaceUpCard - Multi");
+            if (NetworkClient.Instance.IsHost)
+            {
+                gameState = GameState.SelectDiscard;
+                gameDataManager.SetGameState(gameState);
+
+                netCode.ModifyGameData(gameDataManager.EncryptedData());
+            }
+            ReceiveCardFromFaceUpPile(currentTurnPlayer);
+        }
+
+        public override void ReceiveCardFromFaceUpPile(Player player)
+        {
+            drawnFaceUpCard = gameDataManager.GetDrawnCard();
+            cardAnimator.DrawDisplayingCardsFromFaceUpPile(player, faceUpPile, drawnFaceUpCard);
+        }
+
+        public override void OnOkSelected()
+        {
+            if (gameState == GameState.FirstTurn && currentTurnPlayer == localPlayer)
+            {
+                if (selectedCard != null)
+                {
+                    MessageText.text = "Takes the card";
+                    selectedCard = null;
+
+                    byte card = gameDataManager.DrawFaceUpCard();
+                    drawnFaceUpCard = card;
+
+                    gameDataManager.AddCardToPlayer(currentTurnPlayer, card);
+                    gameDataManager.SetDrawnCard(card);
+
+                    gameState = GameState.ConfirmTakeFaceUpCard;
+                    gameDataManager.SetGameState(gameState);
+
+                    netCode.ModifyGameData(gameDataManager.EncryptedData());
+                    netCode.NotifyOtherPlayerGameStateChanged();
+                }
+                else
+                {
+                    MessageText.text = "Pass";
+                    gameState = GameState.FirstTurnPassStarted;
+
+                    gameDataManager.SetGameState(gameState);
+
+                    netCode.NotifyOtherPlayerGameStateChanged();
+                }
+            }
+            else if (gameState == GameState.FirstTurnPass && currentTurnPlayer == localPlayer)
+            {
+                if (selectedCard != null)
+                {
+                    MessageText.text = "Takes the card";
+                    selectedCard = null;
+
+                    byte card = gameDataManager.DrawFaceUpCard();
+                    drawnFaceUpCard = card;
+
+                    gameDataManager.AddCardToPlayer(currentTurnPlayer, card);
+                    gameDataManager.SetDrawnCard(card);
+
+                    gameState = GameState.ConfirmTakeFaceUpCard;
+                    gameDataManager.SetGameState(gameState);
+
+                    netCode.ModifyGameData(gameDataManager.EncryptedData());
+                    netCode.NotifyOtherPlayerGameStateChanged();
+                }
+                else
+                {
+                    MessageText.text = "Pass";
+                    gameState = GameState.SelectDraw;
+                    SwitchTurns();
+                    GameFlow();
+                }
+            }
+            else if (gameState == GameState.SelectDraw && currentTurnPlayer == localPlayer)
+            {
+                DrawCard();
+                gameState = GameState.SelectDiscard;
+                GameFlow();
+            }
+            else if (gameState == GameState.SelectDiscard && currentTurnPlayer == localPlayer)
+            {
+                if (selectedCard != null)
+                {
+                    Discard(currentTurnPlayer);
+                    CheckForMelds();
+                    SwitchTurns();
+                    gameState = GameState.SelectDraw;
+                    GameFlow();
+                }
+                else if (playerCanKnock)
+                {
+                    playerKnocked = currentTurnPlayer;
+                    gameState = GameState.Knock;
+                    GameFlow();
+                }
+            }
         }
 
         public override void AllAnimationsFinished()
         {
+            Debug.Log("Animations Finished");
             if (NetworkClient.Instance.IsHost)
             {
-                netCode.NotifyOtherPlayerGameStateChanged();
+                netCode.NotifyOtherPlayerGameStateChanged();        
             }
         }
 

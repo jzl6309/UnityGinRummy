@@ -28,6 +28,8 @@ namespace UnityGinRummy
         string currentTurnPlayerId;
         [SerializeField]
         int currentGameState;
+        [SerializeField]
+        byte drawnCard;
 
 
         public ProtectedData(string p1ID, string p2ID, string cardPileID)
@@ -174,6 +176,16 @@ namespace UnityGinRummy
             return currentTurnPlayerId;
         }
 
+        public void SetDrawnCard(byte card)
+        {
+            drawnCard = card;
+        }
+
+        public byte GetDrawnCard()
+        {
+            return drawnCard;
+        }
+
         public void SetCurrentGameState(int gamestate)
         {
             currentGameState = gamestate;
@@ -205,6 +217,7 @@ namespace UnityGinRummy
             msg.PushUTF8ShortString(currentTurnPlayerId);
             Debug.Log("encrypted gamestate " + currentGameState);
             msg.Push(currentGameState);
+            msg.Push(drawnCard);
 
             return msg.ToArray();
         }
@@ -230,6 +243,8 @@ namespace UnityGinRummy
             currentTurnPlayerId = msg.PopUTF8ShortString();
             currentGameState = msg.PopInt32();
             Debug.Log("dencrypted gamestate " + currentGameState);
+
+            drawnCard = msg.PopByte();
         }
     }
 }
