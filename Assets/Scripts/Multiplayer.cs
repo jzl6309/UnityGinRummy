@@ -107,6 +107,7 @@ namespace UnityGinRummy
 
         protected override void OnGameStart()
         {
+            GinRummyUtil.initialzeMeldTools();
             Debug.Log("OnGameStart - Multi");
             if (NetworkClient.Instance.IsHost)
             {
@@ -119,8 +120,6 @@ namespace UnityGinRummy
                 Debug.Log("gamestate is " + gameState);
                 netCode.ModifyGameData(gameDataManager.EncryptedData());
             }
-            
-            GinRummyUtil.initialzeMeldTools();
             
             cardAnimator.DealDisplayCards(localPlayer, remotePlayer, faceUpPile);
 
