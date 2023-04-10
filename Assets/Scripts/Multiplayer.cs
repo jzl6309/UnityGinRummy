@@ -169,10 +169,60 @@ namespace UnityGinRummy
             ReceiveCardFromFaceUpPile(currentTurnPlayer);
         }
 
+        public override void DrawCard()
+        {
+            if (selectedCard == null)
+            {
+                byte card = gameDataManager.DrawCard();
+                gameDataManager.AddCardToPlayer(currentTurnPlayer, card);
+                //gameDataManager.SetDrawnCard(card);
+
+                gameState = GameState.ConfirmDrawCard;
+                gameDataManager.SetGameState(gameState);
+
+                netCode.ModifyGameData(gameDataManager.EncryptedData());
+                netCode.NotifyOtherPlayerGameStateChanged();
+            }
+            else
+            {
+                selectedCard = null;
+
+                byte card = gameDataManager.DrawFaceUpCard();
+                drawnCard = card;
+
+                gameDataManager.AddCardToPlayer(currentTurnPlayer, card);
+                gameDataManager.SetDrawnCard(card);
+
+                gameState = GameState.ConfirmTakeFaceUpCard;
+                gameDataManager.SetGameState(gameState);
+
+                netCode.ModifyGameData(gameDataManager.EncryptedData());
+                netCode.NotifyOtherPlayerGameStateChanged();
+            }
+        }
+
+        protected override void OnConfirmDrawCard()
+        {
+            Debug.Log("OnConfirmDrawCard -  multi");
+            cardAnimator.DrawDisplayCard(currentTurnPlayer, selectedCard);
+            currentTurnPlayer.ResetDisplayCards(cardAnimator);
+
+            if (NetworkClient.Instance.IsHost)
+            {
+                gameState = GameState.SelectDiscard;
+                gameDataManager.SetGameState(gameState);
+
+                netCode.ModifyGameData(gameDataManager.EncryptedData());
+            }
+
+            selectedCard = null;
+            drawnCard = 255;
+        }
+
         public override void ReceiveCardFromFaceUpPile(Player player)
         {
-            drawnFaceUpCard = gameDataManager.GetDrawnCard();
-            cardAnimator.DrawDisplayingCardsFromFaceUpPile(player, faceUpPile, drawnFaceUpCard);
+            drawnCard = gameDataManager.GetDrawnCard();
+            cardAnimator.DrawDisplayingCardsFromFaceUpPile(player, faceUpPile, drawnCard);
             currentTurnPlayer.ResetDisplayCards(cardAnimator);
         }
 
@@ -195,8 +245,8 @@ namespace UnityGinRummy
 
         protected override void OnConfirmSelectDiscard()
         {
-            drawnFaceUpCard = gameDataManager.GetDrawnCard();
-            cardAnimator.DiscardDisplayCardsToFaceUpPile(currentTurnPlayer, faceUpPile, drawnFaceUpCard);
+            drawnCard = gameDataManager.GetDrawnCard();
+            cardAnimator.DiscardDisplayCardsToFaceUpPile(currentTurnPlayer, faceUpPile, drawnCard);
             currentTurnPlayer.ResetDisplayCards(cardAnimator);
 
             if (NetworkClient.Instance.IsHost)
@@ -210,7 +260,7 @@ namespace UnityGinRummy
             }
 
             selectedCard = null;
-            drawnFaceUpCard = 255;
+            drawnCard = 255;
         }
 
         public override void OnOkSelected()
@@ -223,7 +273,7 @@ namespace UnityGinRummy
                     selectedCard = null;
 
                     byte card = gameDataManager.DrawFaceUpCard();
-                    drawnFaceUpCard = card;
+                    drawnCard = card;
 
                     gameDataManager.AddCardToPlayer(currentTurnPlayer, card);
                     gameDataManager.SetDrawnCard(card);
@@ -252,7 +302,7 @@ namespace UnityGinRummy
                     selectedCard = null;
 
                     byte card = gameDataManager.DrawFaceUpCard();
-                    drawnFaceUpCard = card;
+                    drawnCard = card;
 
                     gameDataManager.AddCardToPlayer(currentTurnPlayer, card);
                     gameDataManager.SetDrawnCard(card);
@@ -279,8 +329,6 @@ namespace UnityGinRummy
             else if (gameState == GameState.SelectDraw && currentTurnPlayer == localPlayer)
             {
                 DrawCard();
-                gameState = GameState.SelectDiscard;
-                GameFlow();
             }
             else if (gameState == GameState.SelectDiscard && currentTurnPlayer == localPlayer)
             {

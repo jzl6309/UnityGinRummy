@@ -39,7 +39,7 @@ namespace UnityGinRummy
         int player2Points = 0;
 
         protected Card selectedCard;
-        protected byte drawnFaceUpCard = 255;
+        protected byte drawnCard = 255;
         protected bool playerCanKnock = false;
 
         public List<Transform> PlayerPositions = new List<Transform>();
@@ -54,6 +54,7 @@ namespace UnityGinRummy
             FirstTurnPass,
             ConfirmTakeFaceUpCard,
             SelectDraw,
+            ConfirmDrawCard,
             SelectDiscard,
             ConfirmSelectDiscard,
             Knock,
@@ -100,7 +101,8 @@ namespace UnityGinRummy
         {
             if (gameState > GameState.GameStarted && gameState < GameState.GameFinished)
             {
-                if (gameState != GameState.ConfirmTakeFaceUpCard && gameState != GameState.ConfirmSelectDiscard)
+                if (gameState != GameState.ConfirmTakeFaceUpCard && gameState != GameState.ConfirmSelectDiscard
+                    && gameState != GameState.ConfirmDrawCard)
                 {
                     SetFaceUpPile();
                     CheckForMelds();
@@ -156,6 +158,12 @@ namespace UnityGinRummy
                     {
                         Debug.Log("Select Draw");
                         OnSelectDraw();
+                        break;
+                    }
+                case GameState.ConfirmDrawCard:
+                    {
+                        Debug.Log("ConfirmDrawCard");
+                        OnConfirmDrawCard();
                         break;
                     }
                 case GameState.SelectDiscard:
@@ -312,6 +320,11 @@ namespace UnityGinRummy
 
                 StartCoroutine(WaitForDrawFunction());
             }
+        }
+
+        protected virtual void OnConfirmDrawCard()
+        {
+            Debug.Log("OnConfirmDrawCard");
         }
 
         void OnSelectDiscard()
@@ -544,7 +557,7 @@ namespace UnityGinRummy
                 player.ResetDisplayCards(cardAnimator);
 
                 selectedCard = null;
-                drawnFaceUpCard = 255;
+                drawnCard = 255;
                 return false;
             }
         }
@@ -642,7 +655,7 @@ namespace UnityGinRummy
         public virtual void ReceiveCardFromFaceUpPile(Player player)
         {
             byte card = gameDataManager.DrawFaceUpCard();
-            drawnFaceUpCard = card;
+            drawnCard = card;
 
             //Debug.Log("face up card is " + Card.GetRank(card) + " " + Card.GetSuit(card));
             gameDataManager.AddCardToPlayer(player, card);
@@ -650,7 +663,7 @@ namespace UnityGinRummy
             cardAnimator.DrawDisplayingCardsFromFaceUpPile(player, faceUpPile, card);
         }
 
-        public void DrawCard()
+        public virtual void DrawCard()
         {
             if (selectedCard == null) { 
                 byte card =  gameDataManager.DrawCard();
@@ -673,7 +686,7 @@ namespace UnityGinRummy
             byte card;
             if (currentTurnPlayer.isBot)
             {
-                card = gameDataManager.GetDiscard(currentTurnPlayer, drawnFaceUpCard);
+                card = gameDataManager.GetDiscard(currentTurnPlayer, drawnCard);
                 if (card == Constants.NO_MORE_CARDS)
                 {
                     gameState = GameState.Knock;
@@ -692,7 +705,7 @@ namespace UnityGinRummy
             player.ResetDisplayCards(cardAnimator);
 
             selectedCard = null;
-            drawnFaceUpCard = 255;
+            drawnCard = 255;
         }
 
         public virtual void OnCardSelected(Card card)
