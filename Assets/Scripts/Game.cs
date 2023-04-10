@@ -55,6 +55,7 @@ namespace UnityGinRummy
             ConfirmTakeFaceUpCard,
             SelectDraw,
             SelectDiscard,
+            ConfirmSelectDiscard,
             Knock,
             HandFinished,
             GameFinished
@@ -99,7 +100,7 @@ namespace UnityGinRummy
         {
             if (gameState > GameState.GameStarted && gameState < GameState.GameFinished)
             {
-                if (gameState != GameState.ConfirmTakeFaceUpCard)
+                if (gameState != GameState.ConfirmTakeFaceUpCard && gameState != GameState.ConfirmSelectDiscard)
                 {
                     SetFaceUpPile();
                     CheckForMelds();
@@ -161,6 +162,12 @@ namespace UnityGinRummy
                     {
                         Debug.Log("Select Discard");
                         OnSelectDiscard();
+                        break;
+                    }
+                case GameState.ConfirmSelectDiscard:
+                    {
+                        Debug.Log("ConfirmSelectDiscard");
+                        OnConfirmSelectDiscard();
                         break;
                     }
                 case GameState.Knock:
@@ -341,6 +348,11 @@ namespace UnityGinRummy
                     gameState = GameState.SelectDraw;
                 }
             }
+        }
+
+        protected virtual void OnConfirmSelectDiscard()
+        {
+
         }
 
         void OnKnock()
@@ -656,7 +668,7 @@ namespace UnityGinRummy
             }
         }
 
-        public void Discard(Player player)
+        public virtual void Discard(Player player)
         {
             byte card;
             if (currentTurnPlayer.isBot)
@@ -723,7 +735,7 @@ namespace UnityGinRummy
             }
             else if (gameState == GameState.SelectDraw)
             {
-                if (card.OwnerId == faceUpPile.PlayerId)
+                if (card.OwnerId == faceUpPile.PlayerId && currentTurnPlayer == localPlayer)
                 {
                     if (selectedCard != null && selectedCard.isSelected)
                     {
@@ -741,7 +753,7 @@ namespace UnityGinRummy
             }
             else if (gameState == GameState.SelectDiscard)
             {
-                if (card.OwnerId == currentTurnPlayer.PlayerId)
+                if (card.OwnerId == currentTurnPlayer.PlayerId && currentTurnPlayer == localPlayer)
                 {
                     if (selectedCard != null && selectedCard.isSelected)
                     {

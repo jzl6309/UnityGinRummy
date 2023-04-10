@@ -173,6 +173,44 @@ namespace UnityGinRummy
         {
             drawnFaceUpCard = gameDataManager.GetDrawnCard();
             cardAnimator.DrawDisplayingCardsFromFaceUpPile(player, faceUpPile, drawnFaceUpCard);
+            currentTurnPlayer.ResetDisplayCards(cardAnimator);
+        }
+
+        public override void Discard(Player player)
+        {
+            byte card;
+           
+            card = selectedCard.GetCardId((int)selectedCard.Rank, (int)selectedCard.Suit);
+
+            gameDataManager.RemoveCardFromPlayer(player, card);
+            gameDataManager.AddCardToPlayer(faceUpPile, card);
+            gameDataManager.SetDrawnCard(card);
+
+            gameState = GameState.ConfirmSelectDiscard;
+            gameDataManager.SetGameState(gameState);
+
+            netCode.ModifyGameData(gameDataManager.EncryptedData());
+            netCode.NotifyOtherPlayerGameStateChanged();
+        }
+
+        protected override void OnConfirmSelectDiscard()
+        {
+            drawnFaceUpCard = gameDataManager.GetDrawnCard();
+            cardAnimator.DiscardDisplayCardsToFaceUpPile(currentTurnPlayer, faceUpPile, drawnFaceUpCard);
+            currentTurnPlayer.ResetDisplayCards(cardAnimator);
+
+            if (NetworkClient.Instance.IsHost)
+            {
+                SwitchTurns();
+                gameState = GameState.SelectDraw;
+                gameDataManager.SetGameState(gameState);
+                gameDataManager.SetCurrentTurnPlayer(currentTurnPlayer);
+
+                netCode.ModifyGameData(gameDataManager.EncryptedData());
+            }
+
+            selectedCard = null;
+            drawnFaceUpCard = 255;
         }
 
         public override void OnOkSelected()
@@ -230,7 +268,12 @@ namespace UnityGinRummy
                     MessageText.text = "Pass";
                     gameState = GameState.SelectDraw;
                     SwitchTurns();
-                    GameFlow();
+
+                    gameDataManager.SetGameState(gameState);
+                    gameDataManager.SetCurrentTurnPlayer(currentTurnPlayer);
+
+                    netCode.ModifyGameData(gameDataManager.EncryptedData());
+                    netCode.NotifyOtherPlayerGameStateChanged();
                 }
             }
             else if (gameState == GameState.SelectDraw && currentTurnPlayer == localPlayer)
@@ -244,10 +287,6 @@ namespace UnityGinRummy
                 if (selectedCard != null)
                 {
                     Discard(currentTurnPlayer);
-                    CheckForMelds();
-                    SwitchTurns();
-                    gameState = GameState.SelectDraw;
-                    GameFlow();
                 }
                 else if (playerCanKnock)
                 {
