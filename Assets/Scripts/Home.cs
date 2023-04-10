@@ -236,16 +236,15 @@ namespace UnityGinRummy
 
                     OnlineStep2.SetActive(false);
                     roomList.SetActive(true);
-
+                    int idx = 1;
                     foreach (SWRoom room in reply.rooms)
                     {
                         Debug.Log(room);
                         RoomData rData = room.GetCustomData<RoomData>();
                         GameObject btn = Instantiate(buttonTemplate);
-                        btn.GetComponentInChildren<Text>().text = rData.name;
+                        btn.GetComponentInChildren<Text>().text = "Lobby " + idx++ + ": " + rData.name;
                         btn.transform.SetParent(scrollViewContent.transform);
                         btn.GetComponent<Button>().onClick.AddListener(delegate { OnRoomSelected(room.id); });
-
                     }
                 }
                 else
