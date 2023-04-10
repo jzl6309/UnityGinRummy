@@ -229,7 +229,7 @@ namespace UnityGinRummy
             }
             else if (currentTurnPlayer == remotePlayer)
             {
-                MessageText.text = "Oppenent's Turn";
+                MessageText.text = "Opponent's Turn";
             }
             if (currentTurnPlayer.isBot)
             {
