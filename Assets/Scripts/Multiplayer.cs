@@ -263,6 +263,31 @@ namespace UnityGinRummy
             drawnCard = 255;
         }
 
+        protected override void OnHandFinished()
+        {
+            Debug.Log("OnHandFinished - Multi");
+            if (player1Points < GinRummyUtil.GOAL_SCORE && player2Points < GinRummyUtil.GOAL_SCORE)
+            {
+                HideAllCards();
+
+                if (NetworkClient.Instance.IsHost)
+                {
+                    gameState = GameState.GameStarted;
+                    gameDataManager.SetGameState(gameState);
+
+                    netCode.ModifyGameData(gameDataManager.EncryptedData());
+                }
+                Debug.Log("I am clearing player 1 cards");
+                cardAnimator.ClearAllCards(localPlayer);
+                Debug.Log("I am clearing player 2 cards");
+                cardAnimator.ClearAllCards(remotePlayer);
+                Debug.Log("I am clearing faceUpPile cards");
+                cardAnimator.ClearAllCards(faceUpPile);
+
+                Debug.Log("I finished");
+            }
+        }
+
         public override void OnOkSelected()
         {
             if (gameState == GameState.FirstTurn && currentTurnPlayer == localPlayer)
@@ -339,9 +364,26 @@ namespace UnityGinRummy
                 else if (playerCanKnock)
                 {
                     playerKnocked = currentTurnPlayer;
+
                     gameState = GameState.Knock;
-                    GameFlow();
+                    gameDataManager.SetGameState(gameState);
+
+                    netCode.ModifyGameData(gameDataManager.EncryptedData());
+                    netCode.NotifyOtherPlayerGameStateChanged();
                 }
+            }
+        }
+
+        public override IEnumerator WaitForHandFinishedFunction()
+        {
+            yield return new WaitForSeconds(3);
+            if (NetworkClient.Instance.IsHost)
+            {
+                gameState = GameState.HandFinished;
+                gameDataManager.SetGameState(gameState);
+
+                netCode.ModifyGameData(gameDataManager.EncryptedData());
+                netCode.NotifyOtherPlayerGameStateChanged();
             }
         }
 

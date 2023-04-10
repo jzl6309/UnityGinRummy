@@ -35,8 +35,8 @@ namespace UnityGinRummy
         protected Player currentTurnTargetPlayer;
 
         protected Player playerKnocked;
-        int player1Points = 0;
-        int player2Points = 0;
+        protected int player1Points = 0;
+        protected int player2Points = 0;
 
         protected Card selectedCard;
         protected byte drawnCard = 255;
@@ -368,7 +368,7 @@ namespace UnityGinRummy
 
         }
 
-        void OnKnock()
+        protected virtual void OnKnock()
         {
             gameState = GameState.Waiting;
             bool gin = GetFinalDiscard(currentTurnPlayer);
@@ -438,8 +438,9 @@ namespace UnityGinRummy
             StartCoroutine(WaitForHandFinishedFunction());
         }
 
-        void OnHandFinished()
+        protected virtual void OnHandFinished()
         {
+            Debug.Log("OnHandFinished");
             if (player1Points < GinRummyUtil.GOAL_SCORE && player2Points < GinRummyUtil.GOAL_SCORE)
             {
                 HideAllCards();
@@ -474,7 +475,7 @@ namespace UnityGinRummy
             GameFlow();
         }
 
-        public IEnumerator WaitForHandFinishedFunction()
+        public virtual IEnumerator WaitForHandFinishedFunction()
         {
             yield return new WaitForSeconds(3);
             gameState = GameState.HandFinished;
