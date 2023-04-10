@@ -104,6 +104,7 @@ namespace UnityGinRummy
 
         public void ResetDisplayCards(CardAnimator ca)
         {
+            Debug.Log("ResetDisplayCards");
             NumberOfDisplayedCards = 0;
             foreach (Card card in DisplayingCards)
             {

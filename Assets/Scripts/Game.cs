@@ -200,7 +200,7 @@ namespace UnityGinRummy
 
             cardAnimator.DealDisplayCards(localPlayer, remotePlayer, faceUpPile);
 
-            gameState = GameState.FirstTurn;
+            gameState = GameState.FirstTurnStarted;
         }
 
         protected virtual void OnFirstTurnStarted()
@@ -601,9 +601,9 @@ namespace UnityGinRummy
 
         public void CheckForMelds()
         {
+            SetCurrentMelds(localPlayer);
             List<byte> playersCards = gameDataManager.PlayerCards(localPlayer);
             localPlayer.SetCardValues(playersCards);
-            SetCurrentMelds(localPlayer);
         }
 
         public void CheckOppMelds()
