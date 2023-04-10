@@ -482,7 +482,7 @@ namespace UnityGinRummy
             GameFlow();
         }
 
-        public void SetScoresText(int player1Deadwood, int player2Deadwood, Player playerKnocked, int bonus)
+        public virtual void SetScoresText(int player1Deadwood, int player2Deadwood, Player playerKnocked, int bonus)
         {
             if (playerKnocked == localPlayer)
             {
@@ -541,7 +541,7 @@ namespace UnityGinRummy
             Player2ScoreText.text = "Player 2: " + player2Points;
         }
 
-        public bool GetFinalDiscard(Player player)
+        public virtual bool GetFinalDiscard(Player player)
         {
             byte cardVal = gameDataManager.GetFinalDiscard(player);
 
@@ -622,9 +622,9 @@ namespace UnityGinRummy
 
         public void CheckOppMelds()
         {
+            SetCurrentMelds(remotePlayer);
             List<byte> playersCards = gameDataManager.PlayerCards(remotePlayer);
             remotePlayer.SetCardValues(playersCards);
-            SetCurrentMelds(remotePlayer);
         }
 
         public void ShowAllCards()

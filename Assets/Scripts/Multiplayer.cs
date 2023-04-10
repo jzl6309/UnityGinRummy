@@ -62,6 +62,10 @@ namespace UnityGinRummy
 
         public void OnGameDataReady(EncryptedData encryptedData)
         {
+            if (localPlayer == null || remotePlayer == null)
+            {
+                Awake();
+            }
             Debug.Log("OnGameDataReady");
             if (encryptedData == null)
             { 
@@ -263,6 +267,150 @@ namespace UnityGinRummy
             drawnCard = 255;
         }
 
+        protected virtual void OnKnock()
+        {
+            if (NetworkClient.Instance.IsHost)
+            {
+                gameState = GameState.Waiting;
+                bool gin = GetFinalDiscard(currentTurnPlayer);
+
+                CheckOppMelds();
+                ShowAllCards();
+
+                List<int> finalPoints = gameDataManager.GetFinalPoints(localPlayer, remotePlayer);
+
+                int points1 = finalPoints[0];
+                int points2 = finalPoints[1];
+                int bonus = 0;
+
+                Debug.Log("Player 1 deadwood points " + points1);
+                Debug.Log("Player 2 deadwood points " + points2);
+
+                if (playerKnocked == localPlayer)
+                {
+                    if (points1 == 0 && gin)
+                    {
+                        player1Points += points2 + GinRummyUtil.BIG_GIN_BONUS;
+                        bonus = GinRummyUtil.BIG_GIN_BONUS;
+                    }
+                    else if (points1 == 0)
+                    {
+                        player1Points += points2 + GinRummyUtil.GIN_BONUS;
+                        bonus = GinRummyUtil.GIN_BONUS;
+                    }
+                    else if (points1 < points2)
+                    {
+                        player1Points += points2 - points1;
+                    }
+                    else
+                    {
+                        player2Points += GinRummyUtil.UNDERCUT_BONUS + points1;
+                        bonus = GinRummyUtil.UNDERCUT_BONUS;
+                    }
+                }
+                else
+                {
+                    if (points2 == 0 && gin)
+                    {
+                        player2Points += points1 + GinRummyUtil.BIG_GIN_BONUS;
+                        bonus = GinRummyUtil.BIG_GIN_BONUS;
+                    }
+                    else if (points2 == 0)
+                    {
+                        player2Points += points1 + GinRummyUtil.GIN_BONUS;
+                        bonus = GinRummyUtil.GIN_BONUS;
+                    }
+                    else if (points2 < points1)
+                    {
+                        player2Points += points1 - points2;
+                    }
+                    else
+                    {
+                        player1Points += GinRummyUtil.UNDERCUT_BONUS + points2;
+                        bonus = GinRummyUtil.UNDERCUT_BONUS;
+                    }
+                }
+            }
+        }
+
+        public virtual bool GetFinalDiscard(Player player)
+        {
+            byte cardVal = gameDataManager.GetFinalDiscard(player);
+
+            if (cardVal == Constants.NO_MORE_CARDS)
+            {
+                return true;
+            }
+            else
+            {
+                gameDataManager.RemoveCardFromPlayer(player, cardVal);
+                gameDataManager.AddCardToPlayer(faceUpPile, cardVal);
+
+                cardAnimator.DiscardDisplayCardsToFaceUpPile(player, faceUpPile, cardVal);
+                player.ResetDisplayCards(cardAnimator);
+
+                selectedCard = null;
+                drawnCard = 255;
+                return false;
+            }
+        }
+
+        public virtual void SetScoresText(int player1Deadwood, int player2Deadwood, Player playerKnocked, int bonus)
+        {
+            if (playerKnocked == localPlayer)
+            {
+                if (player1Deadwood < player2Deadwood)
+                {
+                    if (bonus == 0)
+                    {
+                        HandScoreText.text = "Player 1 score: " + player2Deadwood + " - " + player1Deadwood + " = " + (player2Deadwood - player1Deadwood);
+                    }
+                    else if (bonus == GinRummyUtil.BIG_GIN_BONUS)
+                    {
+                        HandScoreText.text = "Player 1 score: " + player2Deadwood + " - " + player1Deadwood + " = " + (player2Deadwood - player1Deadwood) +
+                                                "\n+ Big Gin Bonus 50";
+                    }
+                    else if (bonus == GinRummyUtil.GIN_BONUS)
+                    {
+                        HandScoreText.text = "Player 1 score: " + player2Deadwood + " - " + player1Deadwood + " = " + (player2Deadwood - player1Deadwood) +
+                                                "\n+ Gin Bonus 25";
+                    }
+                }
+                else
+                {
+                    HandScoreText.text = "Player 2 score: " + player1Deadwood + " - " + player2Deadwood + " = " + (player1Deadwood - player2Deadwood) +
+                                            "\n+ Gin Bonus 25";
+                }
+            }
+            else
+            {
+                if (player2Deadwood < player1Deadwood)
+                {
+                    if (bonus == 0)
+                    {
+                        HandScoreText.text = "Player 2 score: " + player1Deadwood + " - " + player2Deadwood + " = " + (player1Deadwood - player2Deadwood);
+                    }
+                    else if (bonus == GinRummyUtil.BIG_GIN_BONUS)
+                    {
+                        HandScoreText.text = "Player 2 score: " + player1Deadwood + " - " + player2Deadwood + " = " + (player1Deadwood - player2Deadwood) +
+                                                "\n+ Big Gin Bonus 50";
+                    }
+                    else if (bonus == GinRummyUtil.GIN_BONUS)
+                    {
+                        HandScoreText.text = "Player 2 score: " + player1Deadwood + " - " + player2Deadwood + " = " + (player1Deadwood - player2Deadwood) +
+                                                "\n+ Gin Bonus 25";
+                    }
+                }
+                else
+                {
+                    HandScoreText.text = "Player 1 score: " + player2Deadwood + " - " + player1Deadwood + " = " + (player2Deadwood - player1Deadwood) +
+                                            "\n+ Gin Bonus 25";
+                }
+            }
+            Player1ScoreText.text = "Player 1: " + player1Points;
+            Player2ScoreText.text = "Player 2: " + player2Points;
+            
+        }
         protected override void OnHandFinished()
         {
             Debug.Log("OnHandFinished - Multi");
