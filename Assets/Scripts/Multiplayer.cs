@@ -8,7 +8,8 @@ namespace UnityGinRummy
     public class Multiplayer : Game
     {
         NetCode netCode;
-      
+        bool gin = false;
+
         protected new void Awake()
         {
             base.Awake();
@@ -16,7 +17,7 @@ namespace UnityGinRummy
             remotePlayer.isBot = false;
             Debug.Log("Multiplayer awake");
             netCode = FindObjectOfType<NetCode>();
-            
+
             NetworkClient.Lobby.GetPlayersInRoom((successful, reply, error) =>
             {
                 if (successful)
@@ -39,9 +40,10 @@ namespace UnityGinRummy
                             remotePlayer.PlayerName = playerName;
                         }
                     }
-
+                    
                     gameDataManager = new GameDataManager(localPlayer, remotePlayer, faceUpPile);
                     netCode.EnableRoomPropertyAgent();
+                    Debug.Log("finished getting players");
                 }
                 else
                 {
@@ -62,10 +64,6 @@ namespace UnityGinRummy
 
         public void OnGameDataReady(EncryptedData encryptedData)
         {
-            if (localPlayer == null || remotePlayer == null)
-            {
-                Awake();
-            }
             Debug.Log("OnGameDataReady");
             if (encryptedData == null)
             { 
@@ -98,6 +96,10 @@ namespace UnityGinRummy
         
         public void OnGameDataChanged(EncryptedData encryptedData)
         {
+            if (localPlayer == null || remotePlayer == null)
+            {
+                Awake();
+            }
             Debug.Log("OnGameDataChanged");
             gameDataManager.ApplyEncryptedData(encryptedData);
             gameState = gameDataManager.GetGameState();
@@ -267,16 +269,49 @@ namespace UnityGinRummy
             drawnCard = 255;
         }
 
-        protected virtual void OnKnock()
+        public virtual bool GetFinalDiscard(Player player)
         {
+            Debug.Log("GetFinalDiscard");
+            byte cardVal = gameDataManager.GetFinalDiscard(player);
+
+            if (cardVal == Constants.NO_MORE_CARDS)
+            {
+                return true;
+            }
+            else
+            {
+                gameDataManager.RemoveCardFromPlayer(player, cardVal);
+                gameDataManager.AddCardToPlayer(faceUpPile, cardVal);
+                gameDataManager.SetDrawnCard(cardVal);
+
+                selectedCard = null;
+                drawnCard = 255;
+                return false;
+            }
+        }
+
+        protected override void OnConfirmFinalDiscard()
+        {
+            byte cardVal = gameDataManager.GetDrawnCard();
+            cardAnimator.DiscardDisplayCardsToFaceUpPile(currentTurnPlayer, faceUpPile, cardVal);
+            currentTurnPlayer.ResetDisplayCards(cardAnimator);
+
             if (NetworkClient.Instance.IsHost)
             {
-                gameState = GameState.Waiting;
-                bool gin = GetFinalDiscard(currentTurnPlayer);
+                gameState = GameState.Knock;
+                gameDataManager.SetGameState(gameState);
 
-                CheckOppMelds();
-                ShowAllCards();
+                netCode.ModifyGameData(gameDataManager.EncryptedData());
+            }
+        }
 
+        protected override void OnKnock()
+        {
+            CheckOppMelds();
+            ShowAllCards();
+
+            if (NetworkClient.Instance.IsHost)
+            {
                 List<int> finalPoints = gameDataManager.GetFinalPoints(localPlayer, remotePlayer);
 
                 int points1 = finalPoints[0];
@@ -330,32 +365,13 @@ namespace UnityGinRummy
                         bonus = GinRummyUtil.UNDERCUT_BONUS;
                     }
                 }
+
+                SetScoresText(points1, points2, playerKnocked, bonus);
+            
             }
         }
 
-        public virtual bool GetFinalDiscard(Player player)
-        {
-            byte cardVal = gameDataManager.GetFinalDiscard(player);
-
-            if (cardVal == Constants.NO_MORE_CARDS)
-            {
-                return true;
-            }
-            else
-            {
-                gameDataManager.RemoveCardFromPlayer(player, cardVal);
-                gameDataManager.AddCardToPlayer(faceUpPile, cardVal);
-
-                cardAnimator.DiscardDisplayCardsToFaceUpPile(player, faceUpPile, cardVal);
-                player.ResetDisplayCards(cardAnimator);
-
-                selectedCard = null;
-                drawnCard = 255;
-                return false;
-            }
-        }
-
-        public virtual void SetScoresText(int player1Deadwood, int player2Deadwood, Player playerKnocked, int bonus)
+        public override void SetScoresText(int player1Deadwood, int player2Deadwood, Player playerKnocked, int bonus)
         {
             if (playerKnocked == localPlayer)
             {
@@ -407,10 +423,12 @@ namespace UnityGinRummy
                                             "\n+ Gin Bonus 25";
                 }
             }
+
             Player1ScoreText.text = "Player 1: " + player1Points;
             Player2ScoreText.text = "Player 2: " + player2Points;
             
         }
+
         protected override void OnHandFinished()
         {
             Debug.Log("OnHandFinished - Multi");
@@ -513,8 +531,20 @@ namespace UnityGinRummy
                 {
                     playerKnocked = currentTurnPlayer;
 
-                    gameState = GameState.Knock;
-                    gameDataManager.SetGameState(gameState);
+                    gin = GetFinalDiscard(currentTurnPlayer);
+                    gameDataManager.SetGotGin(gin);
+
+                    if (!gin)
+                    {
+                        gameState = GameState.ConfirmFinalDiscard;
+                        gameDataManager.SetGameState(gameState);
+                    }
+                    else
+                    {
+                        gameState = GameState.Knock;
+                        gameDataManager.SetGameState(gameState);
+                    }
+                    gameDataManager.SetPlayerThatKnocked(playerKnocked);
 
                     netCode.ModifyGameData(gameDataManager.EncryptedData());
                     netCode.NotifyOtherPlayerGameStateChanged();

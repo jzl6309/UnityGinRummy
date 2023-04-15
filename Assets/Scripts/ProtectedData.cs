@@ -27,9 +27,13 @@ namespace UnityGinRummy
         [SerializeField]
         string currentTurnPlayerId;
         [SerializeField]
+        string playerThatKnocked;
+        [SerializeField]
         int currentGameState;
         [SerializeField]
         byte drawnCard;
+        [SerializeField]
+        bool gotGin;
 
 
         public ProtectedData(string p1ID, string p2ID, string cardPileID)
@@ -37,6 +41,7 @@ namespace UnityGinRummy
             player1ID = p1ID;
             player2ID = p2ID;
             currentTurnPlayerId = "";
+            playerThatKnocked = "";
             faceUpID = cardPileID;
             //CalculateKey(roomId);
         }
@@ -186,6 +191,16 @@ namespace UnityGinRummy
             return drawnCard;
         }
 
+        public void SetGotGin(bool gin)
+        {
+            gotGin = gin;
+        }
+
+        public bool GetGotGin()
+        {
+            return gotGin;
+        }
+
         public void SetCurrentGameState(int gamestate)
         {
             currentGameState = gamestate;
@@ -194,6 +209,16 @@ namespace UnityGinRummy
         public int GetCurrentGameState()
         {
             return currentGameState;
+        }
+
+        public void SetPlayerThatKnocked(string playerId)
+        {
+            playerThatKnocked = playerId;
+        }
+
+        public string GetPlayerThatKnocked()
+        {
+            return playerThatKnocked;
         }
 
         public Byte[] ToArray()
@@ -215,9 +240,11 @@ namespace UnityGinRummy
             msg.PushUTF8ShortString(faceUpID);
 
             msg.PushUTF8ShortString(currentTurnPlayerId);
-            Debug.Log("encrypted gamestate " + currentGameState);
+            msg.PushUTF8ShortString(playerThatKnocked);
+
             msg.Push(currentGameState);
             msg.Push(drawnCard);
+            msg.Push(gotGin);
 
             return msg.ToArray();
         }
@@ -241,10 +268,12 @@ namespace UnityGinRummy
             faceUpID = msg.PopUTF8ShortString();
 
             currentTurnPlayerId = msg.PopUTF8ShortString();
+            playerThatKnocked = msg.PopUTF8ShortString();
             currentGameState = msg.PopInt32();
             Debug.Log("dencrypted gamestate " + currentGameState);
 
             drawnCard = msg.PopByte();
+            gotGin = msg.PopBool();
         }
     }
 }

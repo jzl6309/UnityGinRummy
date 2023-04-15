@@ -57,6 +57,7 @@ namespace UnityGinRummy
             ConfirmDrawCard,
             SelectDiscard,
             ConfirmSelectDiscard,
+            ConfirmFinalDiscard,
             Knock,
             HandFinished,
             GameFinished
@@ -102,7 +103,7 @@ namespace UnityGinRummy
             if (gameState > GameState.GameStarted && gameState < GameState.GameFinished)
             {
                 if (gameState != GameState.ConfirmTakeFaceUpCard && gameState != GameState.ConfirmSelectDiscard
-                    && gameState != GameState.ConfirmDrawCard)
+                    && gameState != GameState.ConfirmDrawCard && gameState != GameState.ConfirmFinalDiscard)
                 {
                     SetFaceUpPile();
                     CheckForMelds();
@@ -176,6 +177,12 @@ namespace UnityGinRummy
                     {
                         Debug.Log("ConfirmSelectDiscard");
                         OnConfirmSelectDiscard();
+                        break;
+                    }
+                case GameState.ConfirmFinalDiscard:
+                    {
+                        Debug.Log("ConfirmFinalDiscard");
+                        OnConfirmFinalDiscard();
                         break;
                     }
                 case GameState.Knock:
@@ -364,6 +371,11 @@ namespace UnityGinRummy
         }
 
         protected virtual void OnConfirmSelectDiscard()
+        {
+
+        }
+
+        protected virtual void OnConfirmFinalDiscard()
         {
 
         }

@@ -202,7 +202,7 @@ namespace UnityGinRummy
                 deadwood = GinRummyUtil.getDeadwoodPoints(unmeldedCards);
                 Debug.Log("Deadwood in checkDeadwood is " + deadwood);
                 Debug.Log("The unmelded card count in checkDeadwood is " + unmeldedCards.Count);
-                return deadwood <= GinRummyUtil.MAX_DEADWOOD;
+                return deadwood <= 50;// GinRummyUtil.MAX_DEADWOOD;
             }
         }
 
@@ -403,6 +403,16 @@ namespace UnityGinRummy
             return protectedData.GetDrawnCard();
         }
 
+        public void SetGotGin(bool gin)
+        {
+            protectedData.SetGotGin(gin);
+        }
+
+        public bool GetGotGin()
+        {
+            return protectedData.GetGotGin();
+        }
+
         public void SetCurrentTurnPlayer(Player player)
         {
             protectedData.SetCurrentTurnPlayerId(player.PlayerId);
@@ -410,8 +420,29 @@ namespace UnityGinRummy
 
         public Player GetCurrentTurnPlayer()
         {
+            if (localPlayer == null) Debug.Log("WTF!!!");
             string playerId = protectedData.GetCurrentTurnPlayerId();
+            Debug.Log("playerid string is " + playerId);
             if (playerId.Equals(localPlayer.PlayerId)) 
+            {
+                return localPlayer;
+            }
+            else
+            {
+                return remotePlayer;
+            }
+        }
+
+        public void SetPlayerThatKnocked(Player player)
+        {
+            protectedData.SetCurrentTurnPlayerId(player.PlayerId);
+        }
+
+        public Player GetPlayerThatKnocked()
+        {
+            string playerId = protectedData.GetPlayerThatKnocked();
+            Debug.Log("playerid string is " + playerId);
+            if (playerId.Equals(localPlayer.PlayerId))
             {
                 return localPlayer;
             }
