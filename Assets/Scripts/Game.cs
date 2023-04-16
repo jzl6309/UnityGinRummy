@@ -251,6 +251,7 @@ namespace UnityGinRummy
             else if (currentTurnPlayer == remotePlayer)
             {
                 MessageText.text = "Opponent's Turn";
+                ButtonText.text = "";
             }
             if (currentTurnPlayer.isBot)
             {
@@ -287,6 +288,7 @@ namespace UnityGinRummy
             else if (currentTurnPlayer == remotePlayer)
             {
                 MessageText.text = "Opponent's Turn";
+                ButtonText.text = "";
             }
             if (currentTurnPlayer.isBot)
             {
@@ -491,10 +493,23 @@ namespace UnityGinRummy
                 Debug.Log("I finished");
                 gameState = GameState.GameStarted;
             }
+            else
+            {
+                gameState = GameState.GameFinished;
+                GameFlow();
+            }
         }
 
-        public void OnGameFinished()
+        public virtual void OnGameFinished()
         {
+            if (player1Points > player2Points)
+            {
+                MessageText.text = "Winner!!!";
+            }
+            else
+            {
+                MessageText.text = "Loser!!!";
+            }
 
         }
 

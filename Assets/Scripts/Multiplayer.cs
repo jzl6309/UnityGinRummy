@@ -307,6 +307,7 @@ namespace UnityGinRummy
 
         protected override void OnKnock()
         {
+            playerKnocked = gameDataManager.GetPlayerThatKnocked();
             CheckOppMelds();
             ShowAllCards();
 
@@ -317,30 +318,39 @@ namespace UnityGinRummy
                 int points1 = finalPoints[0];
                 int points2 = finalPoints[1];
                 int bonus = 0;
+                string text = "";
 
                 Debug.Log("Player 1 deadwood points " + points1);
                 Debug.Log("Player 2 deadwood points " + points2);
 
-                if (playerKnocked == localPlayer)
+                Debug.Log("knocked player ID " + playerKnocked.PlayerId);
+                Debug.Log("Player 1 ID " + gameDataManager.GetPlayer1ID());
+
+                if (playerKnocked.PlayerId.Equals(gameDataManager.GetPlayer1ID()))
                 {
                     if (points1 == 0 && gin)
                     {
                         player1Points += points2 + GinRummyUtil.BIG_GIN_BONUS;
-                        bonus = GinRummyUtil.BIG_GIN_BONUS;
+                        text = "Player 1 score: " + points2 + " - 0 = " + points2 +
+                                                    "\n+ Big Gin Bonus 50";
                     }
                     else if (points1 == 0)
                     {
                         player1Points += points2 + GinRummyUtil.GIN_BONUS;
-                        bonus = GinRummyUtil.GIN_BONUS;
+                        text = "Player 1 score: " + points2 + " - 0 = " + points2 +
+                                                   "\n+ Gin Bonus 25"; 
                     }
                     else if (points1 < points2)
                     {
                         player1Points += points2 - points1;
+                        text = "Player 1 score: " + points2 + " - " + points1 + " = " + (points2 - points1);
+
                     }
                     else
                     {
-                        player2Points += GinRummyUtil.UNDERCUT_BONUS + points1;
-                        bonus = GinRummyUtil.UNDERCUT_BONUS;
+                        player2Points += GinRummyUtil.UNDERCUT_BONUS + points1 - points2;
+                        text = "Player 2 score: " + points1 + " - " + points2 + " = " + (points1 - points2) +
+                                                "\n+ Undercut Bonus 25";
                     }
                 }
                 else
@@ -348,101 +358,29 @@ namespace UnityGinRummy
                     if (points2 == 0 && gin)
                     {
                         player2Points += points1 + GinRummyUtil.BIG_GIN_BONUS;
-                        bonus = GinRummyUtil.BIG_GIN_BONUS;
+                        text = "Player 2 score: " + points1 + " - 0 = " + points1 +
+                                                   "\n+ Big Gin Bonus 50";
                     }
                     else if (points2 == 0)
                     {
                         player2Points += points1 + GinRummyUtil.GIN_BONUS;
-                        bonus = GinRummyUtil.GIN_BONUS;
+                        text = "Player 2 score: " + points1 + " - 0 = " + points1 +
+                                                   "\n+ Gin Bonus 25";
                     }
                     else if (points2 < points1)
                     {
                         player2Points += points1 - points2;
+                        text = "Player 2 score: " + points1 + " - " + points2 + " = " + (points1 - points2);
                     }
                     else
                     {
                         player1Points += GinRummyUtil.UNDERCUT_BONUS + points2;
-                        bonus = GinRummyUtil.UNDERCUT_BONUS;
+                        text = "Player 1 score: " + points2 + " - " + points1 + " = " + (points2 - points1) +
+                                               "\n+ Undercut Bonus 25";
                     }
                 }
 
-                gameDataManager.SetGameState(GameState.ConfirmPoints);
                 gameDataManager.SetPoints(player1Points, player2Points);
-                gameDataManager.SetFinalDeadwood(points1, points2);
-                gameDataManager.SetBonus(bonus);
-
-                netCode.ModifyGameData(gameDataManager.EncryptedData());
-                netCode.NotifyOtherPlayerGameStateChanged();
-            }
-        }
-
-        protected override void OnConfirmPoints()
-        {
-            List<int> deadwoordPoints = gameDataManager.GetFinalDeadwood();
-            playerKnocked = gameDataManager.GetPlayerThatKnocked();
-            int bonus = gameDataManager.GetBonus();
-
-            if (NetworkClient.Instance.IsHost)
-            {
-                SetScoresText(deadwoordPoints[0], deadwoordPoints[1], playerKnocked, bonus);
-            }
-        }
-
-        public override void SetScoresText(int player1Deadwood, int player2Deadwood, Player playerKnocked, int bonus)
-        {
-            string text = "";
-            if (NetworkClient.Instance.IsHost)
-            {
-                if (playerKnocked == localPlayer)
-                {
-                    if (player1Deadwood < player2Deadwood)
-                    {
-                        if (bonus == 0)
-                        {
-                            text = "Player 1 score: " + player2Deadwood + " - " + player1Deadwood + " = " + (player2Deadwood - player1Deadwood);
-                        }
-                        else if (bonus == GinRummyUtil.BIG_GIN_BONUS)
-                        {
-                            text = "Player 1 score: " + player2Deadwood + " - " + player1Deadwood + " = " + (player2Deadwood - player1Deadwood) +
-                                                    "\n+ Big Gin Bonus 50";
-                        }
-                        else if (bonus == GinRummyUtil.GIN_BONUS)
-                        {
-                            text = "Player 1 score: " + player2Deadwood + " - " + player1Deadwood + " = " + (player2Deadwood - player1Deadwood) +
-                                                    "\n+ Gin Bonus 25";
-                        }
-                    }
-                    else
-                    {
-                        text = "Player 2 score: " + player1Deadwood + " - " + player2Deadwood + " = " + (player1Deadwood - player2Deadwood) +
-                                                "\n+ Undercut Bonus 25";
-                    }
-                }
-                else
-                {
-                    if (player2Deadwood < player1Deadwood)
-                    {
-                        if (bonus == 0)
-                        {
-                            text = "Player 2 score: " + player1Deadwood + " - " + player2Deadwood + " = " + (player1Deadwood - player2Deadwood);
-                        }
-                        else if (bonus == GinRummyUtil.BIG_GIN_BONUS)
-                        {
-                            text = "Player 2 score: " + player1Deadwood + " - " + player2Deadwood + " = " + (player1Deadwood - player2Deadwood) +
-                                                    "\n+ Big Gin Bonus 50";
-                        }
-                        else if (bonus == GinRummyUtil.GIN_BONUS)
-                        {
-                            text = "Player 2 score: " + player1Deadwood + " - " + player2Deadwood + " = " + (player1Deadwood - player2Deadwood) +
-                                                    "\n+ Gin Bonus 25";
-                        }
-                    }
-                    else
-                    {
-                        text = "Player 1 score: " + player2Deadwood + " - " + player1Deadwood + " = " + (player2Deadwood - player1Deadwood) +
-                                                "\n+ Undercut Bonus 25";
-                    }
-                }
                 gameDataManager.SetHandScoreText(text);
                 gameState = GameState.DisplayPoints;
                 gameDataManager.SetGameState(gameState);
@@ -456,7 +394,8 @@ namespace UnityGinRummy
         {
             List<int> points = gameDataManager.GetPoints();
             string handScoreText = gameDataManager.GetHandScoreText();
-            int bonus = gameDataManager.GetBonus();
+            player1Points = points[0];
+            player2Points = points[1];
 
             HandScoreText.text = handScoreText;
             Player1ScoreText.text = "Player 1: " + points[0];
@@ -469,6 +408,7 @@ namespace UnityGinRummy
         {
             Debug.Log("OnHandFinished - Multi");
             if (player1Points < GinRummyUtil.GOAL_SCORE && player2Points < GinRummyUtil.GOAL_SCORE)
+            //if (player1Points < 30 && player2Points < 30)
             {
                 HideAllCards();
 
@@ -487,6 +427,30 @@ namespace UnityGinRummy
                 cardAnimator.ClearAllCards(faceUpPile);
 
                 Debug.Log("I finished");
+            }
+            else
+            {
+                if (NetworkClient.Instance.IsHost)
+                {
+                    gameState = GameState.GameFinished;
+                    gameDataManager.SetGameState(gameState);
+
+                    netCode.ModifyGameData(gameDataManager.EncryptedData());
+                    netCode.NotifyOtherPlayerGameStateChanged();
+                }
+            }
+        }
+
+        public override void OnGameFinished()
+        {
+            if ((player1Points > player2Points && localPlayer.PlayerId.Equals(gameDataManager.GetPlayer1ID()))
+                || (player2Points > player1Points && !localPlayer.PlayerId.Equals(gameDataManager.GetPlayer1ID())))
+            {
+                MessageText.text = "Winner!!!";
+            }
+            else
+            {
+                MessageText.text = "Loser!!!";
             }
         }
 

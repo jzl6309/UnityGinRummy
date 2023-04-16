@@ -58,6 +58,12 @@ namespace UnityGinRummy
             //CalculateKey(roomId);
         }
 
+        public string GetPlayer1ID()
+        {
+            Debug.Log("GetPlayer1ID " + player1ID);
+            return player1ID;
+        }
+
         public void ClearAllCards()
         {
             poolOfCards = new List<byte>();
