@@ -195,7 +195,6 @@ namespace UnityGinRummy
             {
                 FaceUpDisplay.Clear();
             }
-
         }
 
         private void Update()

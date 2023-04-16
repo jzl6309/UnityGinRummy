@@ -34,7 +34,18 @@ namespace UnityGinRummy
         byte drawnCard;
         [SerializeField]
         bool gotGin;
-
+        [SerializeField]
+        int player1Points;
+        [SerializeField]
+        int player2Points;
+        [SerializeField]
+        int bonusPoints;
+        [SerializeField]
+        int player1Deadwood;
+        [SerializeField]
+        int player2Deadwood;
+        [SerializeField]
+        string handScoreText;
 
         public ProtectedData(string p1ID, string p2ID, string cardPileID)
         {
@@ -43,7 +54,16 @@ namespace UnityGinRummy
             currentTurnPlayerId = "";
             playerThatKnocked = "";
             faceUpID = cardPileID;
+            handScoreText = "";
             //CalculateKey(roomId);
+        }
+
+        public void ClearAllCards()
+        {
+            poolOfCards = new List<byte>();
+            faceUpCardPile = new List<byte>();
+            player1Cards = new List<byte>();
+            player2Cards = new List<byte>();
         }
 
         public void SetPoolOfCards(List<byte> cards)
@@ -221,6 +241,59 @@ namespace UnityGinRummy
             return playerThatKnocked;
         }
 
+        public void SetPoints(int player1, int player2)
+        {
+            player1Points = player1;
+            player2Points = player2;
+        }
+
+        public List<int> GetPoints()
+        {
+            Debug.Log("player 1 points " + player1Points);
+            Debug.Log("player 2 points " + player2Points);
+            List<int> points = new List<int>();
+            points.Add(player1Points);
+            points.Add(player2Points);
+
+            return points;
+        }
+
+        public void SetFinalDeadwood(int player1, int player2)
+        {
+            player1Deadwood = player1;
+            player2Deadwood = player2;
+        }
+
+        public List<int> GetFinalDeadwood()
+        {
+            List<int> points = new List<int>();
+            points.Add(player1Deadwood);
+            points.Add(player2Deadwood);
+
+            return points;
+        }
+
+
+        public void SetBonus(int bonus)
+        {
+            bonusPoints = bonus;
+        }
+
+        public int GetBonus()
+        {
+            return bonusPoints;
+        }
+
+        public void SetHandScoreText(string str)
+        {
+            handScoreText = str;
+        }
+
+        public string GetHandScoreText()
+        {
+            return handScoreText;
+        }
+
         public Byte[] ToArray()
         {
             Debug.Log("ProtectedData - ToArray");
@@ -245,6 +318,12 @@ namespace UnityGinRummy
             msg.Push(currentGameState);
             msg.Push(drawnCard);
             msg.Push(gotGin);
+            msg.Push(player1Points);
+            msg.Push(player2Points);
+            msg.Push(bonusPoints);
+            msg.Push(player1Deadwood);
+            msg.Push(player2Deadwood);
+            msg.PushUTF8ShortString(handScoreText);
 
             return msg.ToArray();
         }
@@ -274,6 +353,12 @@ namespace UnityGinRummy
 
             drawnCard = msg.PopByte();
             gotGin = msg.PopBool();
+            player1Points = msg.PopInt32();
+            player2Points = msg.PopInt32();
+            bonusPoints = msg.PopInt32();
+            player1Deadwood = msg.PopInt32();
+            player2Deadwood = msg.PopInt32();
+            handScoreText = msg.PopUTF8ShortString();
         }
     }
 }

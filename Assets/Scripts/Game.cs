@@ -59,6 +59,8 @@ namespace UnityGinRummy
             ConfirmSelectDiscard,
             ConfirmFinalDiscard,
             Knock,
+            ConfirmPoints,
+            DisplayPoints,
             HandFinished,
             GameFinished
         };
@@ -108,7 +110,7 @@ namespace UnityGinRummy
                     SetFaceUpPile();
                     CheckForMelds();
                 }
-                if (gameState != GameState.HandFinished && gameState != GameState.GameFinished)
+                if (gameState < GameState.HandFinished)
                     ShowAndHideCards();
             }
 
@@ -189,6 +191,18 @@ namespace UnityGinRummy
                     {
                         Debug.Log("Player Knock");
                         OnKnock();
+                        break;
+                    }
+                case GameState.ConfirmPoints:
+                    {
+                        Debug.Log("ConfirmPoints");
+                        OnConfirmPoints();
+                        break;
+                    }
+                case GameState.DisplayPoints:
+                    {
+                        Debug.Log("DisplayPoints");
+                        OnDisplayPoints();
                         break;
                     }
                 case GameState.HandFinished:
@@ -448,6 +462,16 @@ namespace UnityGinRummy
             SetScoresText(points1, points2, playerKnocked, bonus);
 
             StartCoroutine(WaitForHandFinishedFunction());
+        }
+
+        protected virtual void OnConfirmPoints()
+        {
+
+        }
+
+        protected virtual void OnDisplayPoints()
+        {
+
         }
 
         protected virtual void OnHandFinished()

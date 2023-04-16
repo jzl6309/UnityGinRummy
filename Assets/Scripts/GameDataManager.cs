@@ -32,6 +32,8 @@ namespace UnityGinRummy
 
         public void Shuffle()
         {
+            protectedData.ClearAllCards();
+
             List<byte> cardValues = new List<byte>();
 
             for (byte code = 0; code < 52; code++)
@@ -57,6 +59,7 @@ namespace UnityGinRummy
             }
 
             protectedData.SetPoolOfCards(poolOfCards);
+            Debug.Log("I suffled");
         }
 
         public void Deal(Player player1, Player player2, Player pile)
@@ -90,6 +93,7 @@ namespace UnityGinRummy
             protectedData.AddCardValuesToPlayer(player1, player1Cards);
             protectedData.AddCardValuesToPlayer(player2, player2Cards);
             protectedData.AddCardValuesToPlayer(pile, faceUpCards);
+            Debug.Log("I dealt the cards");
         }
 
         public int SetCurrentMelds(Player player)
@@ -463,6 +467,46 @@ namespace UnityGinRummy
             {
                 return localPlayer;
             }
+        }
+
+        public void SetPoints(int player1, int player2)
+        {
+            protectedData.SetPoints(player1, player2);
+        }
+
+        public List<int> GetPoints()
+        {
+            return protectedData.GetPoints();
+        }
+
+        public void SetFinalDeadwood(int player1, int player2)
+        {
+            protectedData.SetFinalDeadwood(player1, player2);
+        }
+
+        public List<int> GetFinalDeadwood()
+        {
+            return protectedData.GetFinalDeadwood();
+        }
+
+        public void SetBonus(int bonus)
+        {
+            protectedData.SetBonus(bonus);
+        }
+
+        public int GetBonus()
+        {
+            return protectedData.GetBonus();
+        }
+
+        public void SetHandScoreText(string str)
+        {
+            protectedData.SetHandScoreText(str);
+        }
+
+        public string GetHandScoreText()
+        {
+            return protectedData.GetHandScoreText();
         }
     }
 }
